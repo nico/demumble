@@ -25,10 +25,16 @@ int main(int argc, char* argv[]) {
     if (status == 0)
       printf("%s\n", itanium_demangled);
     free(itanium_demangled);
+    if (status == 0)
+      continue;
 
     char* ms_demangled = __unDName(NULL, argv[i], 0, &malloc, &free, 0);
-    if (ms_demangled)
+    if (ms_demangled) {
       printf("%s\n", ms_demangled);
-    free(ms_demangled);
+      free(ms_demangled);
+      continue;
+    }
+
+    printf("%s\n", argv[i]);
   }
 }
