@@ -21,14 +21,14 @@ char* __unDName(char* buffer,
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     int status;
-    char* itanum_demangled = __cxa_demangle(argv[i], NULL, NULL, &status);
+    char* itanium_demangled = __cxa_demangle(argv[i], NULL, NULL, &status);
     if (status == 0)
-      printf("itanum: %s\n", itanum_demangled);
-    free(itanum_demangled);
+      printf("%s\n", itanium_demangled);
+    free(itanium_demangled);
 
     char* ms_demangled = __unDName(NULL, argv[i], 0, &malloc, &free, 0);
     if (ms_demangled)
-      printf("ms: %s\n", ms_demangled);
+      printf("%s\n", ms_demangled);
     free(ms_demangled);
   }
 }
