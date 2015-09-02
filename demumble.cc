@@ -20,21 +20,14 @@ char* __unDName(char* buffer,
 
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
-    int status;
-    char* itanium_demangled = __cxa_demangle(argv[i], NULL, NULL, &status);
-    if (status == 0)
-      printf("%s\n", itanium_demangled);
-    free(itanium_demangled);
-    if (status == 0)
-      continue;
-
-    char* ms_demangled = __unDName(NULL, argv[i], 0, &malloc, &free, 0);
-    if (ms_demangled) {
-      printf("%s\n", ms_demangled);
-      free(ms_demangled);
-      continue;
+    if (char* itanium = __cxa_demangle(argv[i], NULL, NULL, NULL)) {
+      printf("%s\n", itanium);
+      free(itanium);
+    } else if (char* ms = __unDName(NULL, argv[i], 0, &malloc, &free, 0)) {
+      printf("%s\n", ms);
+      free(ms);
+    } else {
+      printf("%s\n", argv[i]);
     }
-
-    printf("%s\n", argv[i]);
   }
 }
