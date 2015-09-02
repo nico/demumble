@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#ifdef UPSTREAM_CODE
 #include "config.h"
 #include "wine/port.h"
 
@@ -30,6 +31,49 @@
 #include "wine/debug.h"
 
 WINE_DEFAULT_DEBUG_CHANNEL(msvcrt);
+#else
+#include <assert.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TRACE(...)
+#define WARN(...)
+#define ERR(...)
+#define CDECL
+typedef int BOOL;
+const BOOL FALSE = 0;
+const BOOL TRUE = 1;
+typedef char CHAR;
+typedef void* (*malloc_func_t)(size_t);
+typedef void (*free_func_t)(void*);
+
+char* lstrcpynA(char* out, const char* in, int n) {
+  strlcpy(out, in, n); return out; /* "close enough", not executed anyways */
+}
+
+/* __unDName/__unDNameEx flags */
+#define UNDNAME_COMPLETE                 (0x0000)
+#define UNDNAME_NO_LEADING_UNDERSCORES   (0x0001) /* Don't show __ in calling convention */
+#define UNDNAME_NO_MS_KEYWORDS           (0x0002) /* Don't show calling convention at all */
+#define UNDNAME_NO_FUNCTION_RETURNS      (0x0004) /* Don't show function/method return value */
+#define UNDNAME_NO_ALLOCATION_MODEL      (0x0008)
+#define UNDNAME_NO_ALLOCATION_LANGUAGE   (0x0010)
+#define UNDNAME_NO_MS_THISTYPE           (0x0020)
+#define UNDNAME_NO_CV_THISTYPE           (0x0040)
+#define UNDNAME_NO_THISTYPE              (0x0060)
+#define UNDNAME_NO_ACCESS_SPECIFIERS     (0x0080) /* Don't show access specifier (public/protected/private) */
+#define UNDNAME_NO_THROW_SIGNATURES      (0x0100)
+#define UNDNAME_NO_MEMBER_TYPE           (0x0200) /* Don't show static/virtual specifier */
+#define UNDNAME_NO_RETURN_UDT_MODEL      (0x0400)
+#define UNDNAME_32_BIT_DECODE            (0x0800)
+#define UNDNAME_NAME_ONLY                (0x1000) /* Only report the variable/method name */
+#define UNDNAME_NO_ARGUMENTS             (0x2000) /* Don't show method arguments */
+#define UNDNAME_NO_SPECIAL_SYMS          (0x4000)
+#define UNDNAME_NO_COMPLEX_TYPE          (0x8000)
+#endif
 
 /* TODO:
  * - document a bit (grammar + functions)
@@ -552,7 +596,7 @@ static char* get_template_name(struct parsed_symbol* sym)
     sym->names.start = sym->names.num;
     if (!(name = get_literal_string(sym))) {
         sym->names.start = start_mark;
-        return FALSE;
+        return NULL;
     }
     str_array_init(&array_pmt);
     args = get_args(sym, &array_pmt, FALSE, '<', '>');
@@ -1551,6 +1595,9 @@ char* CDECL __unDNameEx(char* buffer, const char* mangled, int buflen,
     str_array_init( &sym.stack );
 
     result = symbol_demangle(&sym) ? sym.result : mangled;
+#ifndef UPSTREAM_CODE
+    if (result != mangled) {
+#endif
     if (buffer && buflen)
     {
         lstrcpynA( buffer, result, buflen);
@@ -1560,6 +1607,9 @@ char* CDECL __unDNameEx(char* buffer, const char* mangled, int buflen,
         buffer = memget(strlen(result) + 1);
         if (buffer) strcpy(buffer, result);
     }
+#ifndef UPSTREAM_CODE
+    }
+#endif
 
     und_free_all(&sym);
 
