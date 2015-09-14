@@ -18,6 +18,10 @@
 #include <cstring>
 #include <cctype>
 
+#ifdef _MSC_VER
+#define snprintf _snprintf_s
+#endif
+
 namespace __cxxabiv1
 {
 
@@ -4829,6 +4833,17 @@ public:
     void deallocate(T* p, std::size_t) noexcept
     {
         std::free(p);
+    }
+
+    template <class U> struct rebind { using other = malloc_alloc<U>; };
+    template <class U, class... Args>
+    void construct(U* p, Args&&... args)
+    {
+        ::new ((void*)p) U(std::forward<Args>(args)...);
+    }
+    void destroy(T* p)
+    {
+        p->~T();
     }
 };
 
