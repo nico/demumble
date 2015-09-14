@@ -51,7 +51,7 @@ typedef void* (*malloc_func_t)(size_t);
 typedef void (*free_func_t)(void*);
 
 char* lstrcpynA(char* out, const char* in, int n) {
-  _exit(1); /* not executed in demumbler */
+  exit(1); /* not executed in demumbler */
 }
 
 /* __unDName/__unDNameEx flags */
