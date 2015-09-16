@@ -4822,6 +4822,12 @@ class malloc_alloc
 {
 public:
     typedef T value_type;
+    typedef T& reference;
+    typedef const T& const_reference;
+    typedef T* pointer;
+    typedef const T* const_pointer;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
 
     malloc_alloc() = default;
     template <class U> malloc_alloc(const malloc_alloc<U>&) noexcept {}
