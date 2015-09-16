@@ -4919,7 +4919,11 @@ struct Db
 }  // unnamed namespace
 
 extern "C"
+#ifdef _MSC_VER
+__declspec(dllexport)
+#else
 __attribute__ ((__visibility__("default")))
+#endif
 char*
 __cxa_demangle(const char* mangled_name, char* buf, size_t* n, int* status)
 {
