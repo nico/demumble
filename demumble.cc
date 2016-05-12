@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern "C" {
 char* __cxa_demangle(const char* mangled_name,
@@ -35,7 +36,11 @@ int main(int argc, char* argv[]) {
     print_demangled(argv[i]);
   if (argc == 1) {  // Read stdin instead.
     char buf[1024];
-    while (fgets(buf, sizeof(buf), stdin))
+    while (fgets(buf, sizeof(buf), stdin)) {
+      char* nl = strrchr(buf, '\n');  // chomp trailing newline.
+      if (nl && !nl[1])
+        *nl = '\0';
       print_demangled(buf);
+    }
   }
 }
