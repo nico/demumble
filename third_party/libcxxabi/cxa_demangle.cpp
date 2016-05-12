@@ -19,7 +19,10 @@
 #include <cctype>
 
 #ifdef _MSC_VER
+// snprintf is implemented in VS 2015
+#if _MSC_VER < 1900
 #define snprintf _snprintf_s
+#endif
 #endif
 
 namespace __cxxabiv1
@@ -160,9 +163,10 @@ constexpr const char* float_data<double>::spec;
 template <>
 struct float_data<long double>
 {
-#if defined(__mips__) && defined(__mips_n64) || defined(__aarch64__)
+#if defined(__mips__) && defined(__mips_n64) || defined(__aarch64__) || \
+    defined(__wasm__)
     static const size_t mangled_size = 32;
-#elif defined(__arm__) || defined(__mips__)
+#elif defined(__arm__) || defined(__mips__) || defined(__hexagon__)
     static const size_t mangled_size = 16;
 #else
     static const size_t mangled_size = 20;  // May need to be adjusted to 16 or 24 on other platforms
@@ -4051,7 +4055,7 @@ parse_nested_name(const char* first, const char* last, C& db,
 
 // <discriminator> := _ <non-negative number>      # when number < 10
 //                 := __ <non-negative number> _   # when number >= 10
-//  extension      := decimal-digit+
+//  extension      := decimal-digit+               # at the end of string
 
 const char*
 parse_discriminator(const char* first, const char* last)
@@ -4080,7 +4084,8 @@ parse_discriminator(const char* first, const char* last)
             const char* t1 = first+1;
             for (; t1 != last && std::isdigit(*t1); ++t1)
                 ;
-            first = t1;
+            if (t1 == last)
+                first = last;
         }
     }
     return first;
@@ -4411,7 +4416,7 @@ parse_special_name(const char* first, const char* last, C& db)
                 {
                     if (db.names.empty())
                         return first;
-                    if (first[2] == 'v')
+                    if (first[1] == 'v')
                     {
                         db.names.back().first.insert(0, "virtual thunk to ");
                         first = t;
@@ -4918,15 +4923,8 @@ struct Db
 
 }  // unnamed namespace
 
-extern "C"
-#ifdef _MSC_VER
-__declspec(dllexport)
-#else
-__attribute__ ((__visibility__("default")))
-#endif
-char*
-__cxa_demangle(const char* mangled_name, char* buf, size_t* n, int* status)
-{
+extern "C" _LIBCXXABI_FUNC_VIS char *
+__cxa_demangle(const char *mangled_name, char *buf, size_t *n, int *status) {
     if (mangled_name == nullptr || (buf != nullptr && n == nullptr))
     {
         if (status)
