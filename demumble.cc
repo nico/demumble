@@ -18,16 +18,24 @@ char* __unDName(char* buffer,
                 unsigned short int flags);
 }
 
+void print_demangled(const char* s) {
+  if (char* itanium = __cxa_demangle(s, NULL, NULL, NULL)) {
+    printf("%s\n", itanium);
+    free(itanium);
+  } else if (char* ms = __unDName(NULL, s, 0, &malloc, &free, 0)) {
+    printf("%s\n", ms);
+    free(ms);
+  } else {
+    printf("%s\n", s);
+  }
+}
+
 int main(int argc, char* argv[]) {
-  for (int i = 1; i < argc; ++i) {
-    if (char* itanium = __cxa_demangle(argv[i], NULL, NULL, NULL)) {
-      printf("%s\n", itanium);
-      free(itanium);
-    } else if (char* ms = __unDName(NULL, argv[i], 0, &malloc, &free, 0)) {
-      printf("%s\n", ms);
-      free(ms);
-    } else {
-      printf("%s\n", argv[i]);
-    }
+  for (int i = 1; i < argc; ++i)
+    print_demangled(argv[i]);
+  if (argc == 1) {  // Read stdin instead.
+    char buf[1024];
+    while (fgets(buf, sizeof(buf), stdin))
+      print_demangled(buf);
   }
 }

@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 tests = [
-    ('demumble', ''),
     ('demumble hello', 'hello\n'),
     ('demumble _Z4funcPci', 'func(char*, int)\n'),
     ('demumble ?Fx_i@@YAHP6AHH@Z@Z', 'int __cdecl Fx_i(int (__cdecl*)(int))\n'),
