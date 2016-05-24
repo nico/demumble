@@ -7,6 +7,8 @@ tests = [
     ('demumble ?Fx_i@@YAHP6AHH@Z@Z', 'int __cdecl Fx_i(int (__cdecl*)(int))\n'),
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for OS X)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
+    ('demumble -m hi _Z1fv ho _Z1gv', 'f()\ng()\n'),
+    ('demumble -m < hi _Z1fv ho _Z1gv', 'f()\ng()\n'),
 ]
 
 import os, subprocess
@@ -14,10 +16,10 @@ for t in tests:
     cmd = t[0].split()
     # Assume that demumble is next to this script.
     cmd[0] = os.path.join(os.path.dirname(__file__) or '.', cmd[0])
-    if cmd[1] == '<':
-      p = subprocess.Popen(cmd[0], stdin=subprocess.PIPE,
+    if '<' in cmd:
+      p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-      out = p.communicate(input='\n'.join(cmd[2:]) + '\n')[0]
+      out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
       out = subprocess.check_output(cmd)
     if out != t[1]:
