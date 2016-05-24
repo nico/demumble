@@ -19,28 +19,74 @@ char* __unDName(char* buffer,
                 unsigned short int flags);
 }
 
-void print_demangled(const char* s) {
-  if (char* itanium = __cxa_demangle(s, NULL, NULL, NULL)) {
-    printf("%s\n", itanium);
+static bool starts_with(const char* s, const char* prefix) {
+  return strncmp(s, prefix, strlen(prefix)) == 0;
+}
+
+static void print_demangled(const char* s) {
+  const char* cxa_in = s;
+  if (starts_with(s, "__Z") || starts_with(s, "____Z"))
+    cxa_in += 1;
+  if (char* itanium = __cxa_demangle(cxa_in, NULL, NULL, NULL)) {
+    printf("%s", itanium);
     free(itanium);
   } else if (char* ms = __unDName(NULL, s, 0, &malloc, &free, 0)) {
-    printf("%s\n", ms);
+    printf("%s", ms);
     free(ms);
   } else {
-    printf("%s\n", s);
+    printf("%s", s);
   }
 }
 
+static bool is_mangle_char_posix(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || c == '_';
+}
+
+static bool is_mangle_char_win(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || strchr("?_@$", c);
+}
+
+static char buf[8192];
 int main(int argc, char* argv[]) {
-  for (int i = 1; i < argc; ++i)
+  for (int i = 1; i < argc; ++i) {
     print_demangled(argv[i]);
+    printf("\n");
+  }
   if (argc == 1) {  // Read stdin instead.
-    char buf[1024];
+    char c;
+    size_t num_read = 0;
+    // By default, don't demangle types.  Mangled function names are unlikely
+    // to appear in text for since they start with _Z (or ___Z) or ?? / ?$ / ?@.
+    // But type manglings can be regular words ("Pi" is "int*").
+    // (For command-line args, do try to demangle types though.)
     while (fgets(buf, sizeof(buf), stdin)) {
-      char* nl = strrchr(buf, '\n');  // chomp trailing newline.
-      if (nl && !nl[1])
-        *nl = '\0';
-      print_demangled(buf);
+      char* cur = buf;
+      char* end = cur + strlen(cur);
+
+      while (cur != end) {
+        size_t special = strcspn(cur, "_?");
+        printf("%.*s", static_cast<int>(special), cur);
+        cur += special;
+        if (cur == end)
+          break;
+
+        size_t n_sym = 0;
+        if (*cur == '?')
+          while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]))
+            ++n_sym;
+        else
+          while (cur + n_sym != end && is_mangle_char_posix(cur[n_sym]))
+            ++n_sym;
+
+        char tmp = cur[n_sym];
+        cur[n_sym] = '\0';
+        print_demangled(cur);  // XXX don't print if not match
+        cur[n_sym] = tmp;
+
+        cur += n_sym;
+      }
     }
   }
 }
