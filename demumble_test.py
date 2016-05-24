@@ -11,6 +11,8 @@ tests = [
     ('demumble -m < hi_ho _Z1fv ho _Z1gv ?hm', 'f()\ng()\n?hm\n'),
     ('demumble -m < _Z1fv!_Z1gv', 'f()\ng()\n'),
     ('demumble -m < _Z1fv!foo_bar', 'f()\n'),
+    ('demumble Pi', 'int*\n'),
+    ('demumble < Pi', 'Pi\n'),
 ]
 
 import os, subprocess
