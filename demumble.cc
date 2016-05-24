@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 
 extern "C" {
 char* __cxa_demangle(const char* mangled_name,
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]) {
     // But type manglings can be regular words ("Pi" is "int*").
     // (For command-line args, do try to demangle types though.)
     while (fgets(buf, sizeof(buf), stdin)) {
+      bool need_separator = false;
       char* cur = buf;
       char* end = cur + strlen(cur);
 
@@ -75,8 +77,9 @@ int main(int argc, char* argv[]) {
         size_t special = strcspn(cur, "_?");
         if (print_mode == kPrintAll)
           printf("%.*s", static_cast<int>(special), cur);
-        else if (cur != buf)
+        else if (need_separator)
           printf("\n");
+        need_separator = false;
         cur += special;
         if (cur == end)
           break;
@@ -85,13 +88,22 @@ int main(int argc, char* argv[]) {
         if (*cur == '?')
           while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]))
             ++n_sym;
-        else
+        else {
+          // *cur == '_'.  Check if this looks like a believable Itanium symbol.
+          if (!strnstr(cur, "_Z", strlen("____Z"))) {
+            if (print_mode == kPrintAll)
+              printf("_");
+            ++cur;
+            continue;
+          }
           while (cur + n_sym != end && is_mangle_char_posix(cur[n_sym]))
             ++n_sym;
+        }
 
         char tmp = cur[n_sym];
         cur[n_sym] = '\0';
         print_demangled(cur);
+        need_separator = true;
         cur[n_sym] = tmp;
 
         cur += n_sym;

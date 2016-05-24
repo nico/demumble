@@ -8,7 +8,9 @@ tests = [
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for OS X)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
     ('demumble -m hi _Z1fv ho _Z1gv', 'hi\nf()\nho\ng()\n'),
-    ('demumble -m < hi _Z1fv ho _Z1gv ?hm', 'f()\ng()\n?hm\n'),
+    ('demumble -m < hi_ho _Z1fv ho _Z1gv ?hm', 'f()\ng()\n?hm\n'),
+    ('demumble -m < _Z1fv!_Z1gv', 'f()\ng()\n'),
+    ('demumble -m < _Z1fv!foo_bar', 'f()\n'),
 ]
 
 import os, subprocess
