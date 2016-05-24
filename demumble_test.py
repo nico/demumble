@@ -7,8 +7,8 @@ tests = [
     ('demumble ?Fx_i@@YAHP6AHH@Z@Z', 'int __cdecl Fx_i(int (__cdecl*)(int))\n'),
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for OS X)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
-    ('demumble -m hi _Z1fv ho _Z1gv', 'f()\ng()\n'),
-    ('demumble -m < hi _Z1fv ho _Z1gv', 'f()\ng()\n'),
+    ('demumble -m hi _Z1fv ho _Z1gv', 'hi\nf()\nho\ng()\n'),
+    ('demumble -m < hi _Z1fv ho _Z1gv ?hm', 'f()\ng()\n?hm\n'),
 ]
 
 import os, subprocess

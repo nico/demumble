@@ -23,24 +23,19 @@ static bool starts_with(const char* s, const char* prefix) {
   return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
-enum PrintMode { kPrintAll, kPrintMatching };
-static bool print_demangled(const char* s, PrintMode print_mode) {
+static void print_demangled(const char* s) {
   const char* cxa_in = s;
   if (starts_with(s, "__Z") || starts_with(s, "____Z"))
     cxa_in += 1;
   if (char* itanium = __cxa_demangle(cxa_in, NULL, NULL, NULL)) {
     printf("%s", itanium);
     free(itanium);
-    return true;
   } else if (char* ms = __unDName(NULL, s, 0, &malloc, &free, 0)) {
     printf("%s", ms);
     free(ms);
-    return true;
-  } else if (print_mode == kPrintAll) {
+  } else {
     printf("%s", s);
-    return true;
   }
-  return false;
 }
 
 static bool is_mangle_char_posix(char c) {
@@ -55,15 +50,15 @@ static bool is_mangle_char_win(char c) {
 
 static char buf[8192];
 int main(int argc, char* argv[]) {
-  PrintMode print_mode = kPrintAll;
+  enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
   if (argc > 1 && strcmp(argv[1], "-m") == 0) {
     print_mode = kPrintMatching;
     --argc;
     ++argv;
   }
   for (int i = 1; i < argc; ++i) {
-    if (print_demangled(argv[i], print_mode))
-      printf("\n");
+    print_demangled(argv[i]);
+    printf("\n");
   }
   if (argc == 1) {  // Read stdin instead.
     char c;
@@ -73,7 +68,6 @@ int main(int argc, char* argv[]) {
     // But type manglings can be regular words ("Pi" is "int*").
     // (For command-line args, do try to demangle types though.)
     while (fgets(buf, sizeof(buf), stdin)) {
-      bool need_separator = false;
       char* cur = buf;
       char* end = cur + strlen(cur);
 
@@ -81,9 +75,8 @@ int main(int argc, char* argv[]) {
         size_t special = strcspn(cur, "_?");
         if (print_mode == kPrintAll)
           printf("%.*s", static_cast<int>(special), cur);
-        else if (need_separator)
+        else if (cur != buf)
           printf("\n");
-        need_separator = false;
         cur += special;
         if (cur == end)
           break;
@@ -98,7 +91,7 @@ int main(int argc, char* argv[]) {
 
         char tmp = cur[n_sym];
         cur[n_sym] = '\0';
-        need_separator = print_demangled(cur, print_mode);
+        print_demangled(cur);
         cur[n_sym] = tmp;
 
         cur += n_sym;
