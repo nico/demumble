@@ -13,6 +13,10 @@ tests = [
     ('demumble -m < _Z1fv!foo_bar', 'f()\n'),
     ('demumble Pi', 'int*\n'),
     ('demumble < Pi', 'Pi\n'),
+    ('demumble < ___Z10blocksNRVOv_block_invoke',
+     'invocation function for block in blocksNRVO()\n'),
+    ('demumble < ____Z10blocksNRVOv_block_invoke',
+     'invocation function for block in blocksNRVO()\n'),
 ]
 
 import os, subprocess
