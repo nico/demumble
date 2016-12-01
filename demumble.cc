@@ -49,6 +49,15 @@ static bool is_mangle_char_win(char c) {
          (c >= '0' && c <= '9') || strchr("?_@$", c);
 }
 
+static bool is_plausible_itanium_prefix(char* s) {
+  // Itanium symbols start with 1-4 underscores followed by Z.
+  // strnstr() is BSD, so use a small local buffer and strstr().
+  const int N = 5;  // == strlen("____Z")
+  char prefix[N + 1];
+  strncpy(prefix, s, N); prefix[N] = '\0';
+  return strstr(prefix, "_Z");
+}
+
 static char buf[8192];
 int main(int argc, char* argv[]) {
   enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
@@ -90,7 +99,7 @@ int main(int argc, char* argv[]) {
             ++n_sym;
         else {
           // *cur == '_'.  Check if this looks like a believable Itanium symbol.
-          if (!strnstr(cur, "_Z", strlen("____Z"))) {
+          if (!is_plausible_itanium_prefix(cur)) {
             if (print_mode == kPrintAll)
               printf("_");
             ++cur;
