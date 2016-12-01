@@ -27,10 +27,10 @@ for t in tests:
     # Assume that demumble is next to this script.
     cmd[0] = os.path.join(os.path.dirname(__file__) or '.', cmd[0])
     if '<' in cmd:
-      p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-      out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
+        p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
-      out = subprocess.check_output(cmd)
+        out = subprocess.check_output(cmd)
     if out != t[1]:
-      print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
+        print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
