@@ -15,7 +15,9 @@ tests = [
     ('demumble < Pi', 'Pi\n'),
     ('demumble < ___Z10blocksNRVOv_block_invoke',
      'invocation function for block in blocksNRVO()\n'),
-    ('demumble < ____Z10blocksNRVOv_block_invoke',
+    ('demumble < .____Z10blocksNRVOv_block_invoke',
+     '.invocation function for block in blocksNRVO()\n'),
+    ('demumble -m < .____Z10blocksNRVOv_block_invoke',
      'invocation function for block in blocksNRVO()\n'),
 ]
 
