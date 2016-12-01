@@ -71,8 +71,6 @@ int main(int argc, char* argv[]) {
     printf("\n");
   }
   if (argc == 1) {  // Read stdin instead.
-    char c;
-    size_t num_read = 0;
     // By default, don't demangle types.  Mangled function names are unlikely
     // to appear in text for since they start with _Z (or ___Z) or ?? / ?$ / ?@.
     // But type manglings can be regular words ("Pi" is "int*").
