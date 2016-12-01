@@ -21,7 +21,8 @@ tests = [
      'invocation function for block in blocksNRVO()\n'),
 ]
 
-import os, subprocess
+import os, subprocess, sys
+status = 0
 for t in tests:
     cmd = t[0].split()
     # Assume that demumble is next to this script.
@@ -34,3 +35,6 @@ for t in tests:
         out = subprocess.check_output(cmd)
     if out != t[1]:
         print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
+        status = 1
+print("passed" if status == 0 else "failed")
+sys.exit(status)

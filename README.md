@@ -49,6 +49,8 @@ demumble also has a flag to make it print only things that look like symbols. Fo
 
 Use cmake to build: `cmake -G Ninja && ninja`
 
+Run tests after building: `python demumble_test.py`
+
 `cxa_demangle.cpp` needs more C++11 than Visual Studio 2013 supports, so
 to build on Windows you need to use Visual Studion 2015 or use clang-cl
 as C++ compiler like so:
