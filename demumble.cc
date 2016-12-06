@@ -95,16 +95,14 @@ int main(int argc, char* argv[]) {
         if (*cur == '?')
           while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]))
             ++n_sym;
-        else {
-          // *cur == '_'.  Check if this looks like a believable Itanium symbol.
-          if (!is_plausible_itanium_prefix(cur)) {
-            if (print_mode == kPrintAll)
-              printf("_");
-            ++cur;
-            continue;
-          }
+        else if (is_plausible_itanium_prefix(cur))
           while (cur + n_sym != end && is_mangle_char_posix(cur[n_sym]))
             ++n_sym;
+        else {
+          if (print_mode == kPrintAll)
+            printf("_");
+          ++cur;
+          continue;
         }
 
         char tmp = cur[n_sym];
