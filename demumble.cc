@@ -20,7 +20,7 @@ char* __unDName(char* buffer,
                 unsigned short int flags);
 }
 
-const char kDemumbleVersion[] = ".git";
+const char kDemumbleVersion[] = "1.0.0.git";
 
 static void print_help(FILE* out) {
   fprintf(out,
