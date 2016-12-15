@@ -20,6 +20,19 @@ char* __unDName(char* buffer,
                 unsigned short int flags);
 }
 
+const char kDemumbleVersion[] = ".git";
+
+static void print_help(FILE* out) {
+  fprintf(out,
+"usage: demumble [options] [symbols...]\n"
+"\n"
+"if symbols are unspecified, reads from stdin.\n"
+"\n"
+"options:\n"
+"  -m        only print mangled names that were demangled, omit other output\n"
+"  -version  print demumble version (\"%s\")\n", kDemumbleVersion);
+}
+
 static bool starts_with(const char* s, const char* prefix) {
   return strncmp(s, prefix, strlen(prefix)) == 0;
 }
@@ -61,8 +74,24 @@ static bool is_plausible_itanium_prefix(char* s) {
 static char buf[8192];
 int main(int argc, char* argv[]) {
   enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
-  if (argc > 1 && strcmp(argv[1], "-m") == 0) {
-    print_mode = kPrintMatching;
+  while (argc > 1 && argv[1][0] == '-') {
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+      print_help(stdout);
+      return 0;
+    } else if (strcmp(argv[1], "-m") == 0) {
+      print_mode = kPrintMatching;
+    } else if (strcmp(argv[1], "--version") == 0) {
+      printf("%s\n", kDemumbleVersion);
+      return 0;
+    } else if (strcmp(argv[1], "--") == 0) {
+      --argc;
+      ++argv;
+      break;
+    } else {
+      fprintf(stderr, "demumble: unrecognized option `%s'\n", argv[1]);
+      print_help(stderr);
+      return 1;
+    }
     --argc;
     ++argv;
   }

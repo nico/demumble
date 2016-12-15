@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import os, re, subprocess, sys
 
 tests = [
     ('demumble hello', 'hello\n'),
@@ -20,9 +21,13 @@ tests = [
      '.invocation function for block in blocksNRVO()\n'),
     ('demumble -m < .____Z10blocksNRVOv_block_invoke',
      'invocation function for block in blocksNRVO()\n'),
+    ('demumble -- -m', '-m\n'),
+    ('demumble -- -h', '-h\n'),
+    ('demumble -h', re.compile('.*usage: demumble.*')),
+    ('demumble --help', re.compile('.*usage: demumble.*')),
+    ('demumble --version', re.compile('.*\..*')),
 ]
 
-import os, subprocess, sys
 status = 0
 for t in tests:
     cmd = t[0].split()
@@ -34,7 +39,7 @@ for t in tests:
         out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
         out = subprocess.check_output(cmd)
-    if out != t[1]:
+    if (out != t[1] if isinstance(t[1], str) else t[1].match(out, re.M)):
         print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
         status = 1
 print("passed" if status == 0 else "failed")
