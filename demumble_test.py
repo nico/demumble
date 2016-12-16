@@ -35,10 +35,11 @@ for t in tests:
     cmd[0] = os.path.join(os.path.dirname(__file__) or '.', cmd[0])
     if '<' in cmd:
         p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
         out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
-        out = subprocess.check_output(cmd)
+        out = subprocess.check_output(cmd, universal_newlines=True)
     if (out != t[1] if isinstance(t[1], str) else t[1].match(out, re.M)):
         print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
         status = 1
