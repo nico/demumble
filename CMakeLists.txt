@@ -23,7 +23,7 @@ if (WIN32)
     set(flag_var "CMAKE_${lang}_FLAGS_${build}")
     if(${flag_var} MATCHES "/MD")
       string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-    endif(${flag_var} MATCHES "/MD")
+    endif()
   endforeach()
 endif()
 
