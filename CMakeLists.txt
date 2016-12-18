@@ -9,6 +9,13 @@ if (UNIX AND CMAKE_GENERATOR STREQUAL "Ninja" AND
   set(CMAKE_CXX_FLAGS "$CMAKE_CXX_FLAGS -fdiagnostics-color -Wall")
 endif()
 
+# 10.9 chosen somewhat arbitrary; it's the first target where clang defaults
+# to libc++ and ld64 defaults to stripping __TEXT,__eh_frame.
+if (APPLE)
+  set(CMAKE_C_FLAGS "$CMAKE_C_FLAGS -mmacosx-version-min=10.9")
+  set(CMAKE_CXX_FLAGS "$CMAKE_CXX_FLAGS -mmacosx-version-min=10.9")
+endif()
+
 # This is apparently the simplest way to statically link the CRT in CMake:
 if (WIN32)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" build)
