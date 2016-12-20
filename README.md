@@ -7,6 +7,13 @@ POSIX and Windows.
     func(char*, int)
     $ ./demumble "?Fx_i@@YAHP6AHH@Z@Z"
     int __cdecl Fx_i(int (__cdecl*)(int))
+    
+## Download
+
+There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
+[releases page](https://github.com/nico/demumble/releases).
+
+## But why
 
 It has several nice features that c++filt lacks (and lacks many of c++filt's
 features I never use).
@@ -55,11 +62,6 @@ For example, print demangled names of all functions defined in a bitcode file:
 
     $ grep '^define' bitcode-win.ll  | demumble -m | head -1
     unsigned int __cdecl v8::RoundUpToPowerOfTwo32(unsigned int)
-
-## Download
-
-There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
-[releases page](https://github.com/nico/demumble/releases).
 
 ## Build instructions
 
