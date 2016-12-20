@@ -29,8 +29,8 @@ static void print_help(FILE* out) {
 "if symbols are unspecified, reads from stdin.\n"
 "\n"
 "options:\n"
-"  -m        only print mangled names that were demangled, omit other output\n"
-"  -version  print demumble version (\"%s\")\n", kDemumbleVersion);
+"  -m         only print mangled names that were demangled, omit other output\n"
+"  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
 }
 
 static bool starts_with(const char* s, const char* prefix) {
