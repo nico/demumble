@@ -30,6 +30,7 @@ static void print_help(FILE* out) {
 "\n"
 "options:\n"
 "  -m         only print mangled names that were demangled, omit other output\n"
+"  -f         flush output after each symbol or line\n"
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
 }
 
@@ -74,12 +75,15 @@ static bool is_plausible_itanium_prefix(char* s) {
 static char buf[8192];
 int main(int argc, char* argv[]) {
   enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
+  enum { kDontFlush, kDoFlush } flush_mode = kDontFlush;
   while (argc > 1 && argv[1][0] == '-') {
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
       print_help(stdout);
       return 0;
     } else if (strcmp(argv[1], "-m") == 0) {
       print_mode = kPrintMatching;
+    } else if (strcmp(argv[1], "-f") == 0) {
+      flush_mode = kDoFlush;
     } else if (strcmp(argv[1], "--version") == 0) {
       printf("%s\n", kDemumbleVersion);
       return 0;
@@ -113,8 +117,12 @@ int main(int argc, char* argv[]) {
         size_t special = strcspn(cur, "_?");
         if (print_mode == kPrintAll)
           printf("%.*s", static_cast<int>(special), cur);
-        else if (need_separator)
+        else if (need_separator) {
           printf("\n");
+        }
+        if (flush_mode == kDoFlush) {
+          fflush(stdout);
+        }
         need_separator = false;
         cur += special;
         if (cur == end)
