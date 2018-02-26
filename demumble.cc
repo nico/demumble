@@ -116,9 +116,9 @@ int main(int argc, char* argv[]) {
         size_t special = strcspn(cur, "_?");
         if (print_mode == kPrintAll)
           printf("%.*s", static_cast<int>(special), cur);
-        else if (need_separator) {
+        else if (need_separator)
           printf("\n");
-        }
+
         need_separator = false;
         cur += special;
         if (cur == end)
