@@ -30,6 +30,7 @@ static void print_help(FILE* out) {
 "\n"
 "options:\n"
 "  -m         only print mangled names that were demangled, omit other output\n"
+"  -u         use unbuffered output\n"
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
 }
 
@@ -80,6 +81,8 @@ int main(int argc, char* argv[]) {
       return 0;
     } else if (strcmp(argv[1], "-m") == 0) {
       print_mode = kPrintMatching;
+    } else if (strcmp(argv[1], "-u") == 0) {
+      setbuf(stdout, NULL);
     } else if (strcmp(argv[1], "--version") == 0) {
       printf("%s\n", kDemumbleVersion);
       return 0;
@@ -115,6 +118,7 @@ int main(int argc, char* argv[]) {
           printf("%.*s", static_cast<int>(special), cur);
         else if (need_separator)
           printf("\n");
+
         need_separator = false;
         cur += special;
         if (cur == end)
