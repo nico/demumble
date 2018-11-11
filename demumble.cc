@@ -4,23 +4,9 @@
 #include <string.h>
 #include <algorithm>
 
-extern "C" {
-char* __cxa_demangle(const char* mangled_name,
-                     char* buf,
-                     size_t* n,
-                     int* status);
+#include "llvm/Demangle/Demangle.h"
 
-typedef void* (*malloc_func_t)(size_t);
-typedef void (*free_func_t)(void*);
-char* __unDName(char* buffer,
-                const char* mangled,
-                int buflen,
-                malloc_func_t memget,
-                free_func_t memfree,
-                unsigned short int flags);
-}
-
-const char kDemumbleVersion[] = "1.0.0.git";
+const char kDemumbleVersion[] = "1.1.0.git";
 
 static void print_help(FILE* out) {
   fprintf(out,
@@ -42,10 +28,10 @@ static void print_demangled(const char* s) {
   const char* cxa_in = s;
   if (starts_with(s, "__Z") || starts_with(s, "____Z"))
     cxa_in += 1;
-  if (char* itanium = __cxa_demangle(cxa_in, NULL, NULL, NULL)) {
+  if (char* itanium = llvm::itaniumDemangle(cxa_in, NULL, NULL, NULL)) {
     printf("%s", itanium);
     free(itanium);
-  } else if (char* ms = __unDName(NULL, s, 0, &malloc, &free, 0)) {
+  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
     printf("%s", ms);
     free(ms);
   } else {

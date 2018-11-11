@@ -6,7 +6,9 @@ tests = [
     ('demumble hello', 'hello\n'),
     ('demumble _Z4funcPci _Z1fv', 'func(char*, int)\nf()\n'),
     ('demumble < _Z4funcPci _Z1fv', 'func(char*, int)\nf()\n'),
-    ('demumble ?Fx_i@@YAHP6AHH@Z@Z', 'int __cdecl Fx_i(int (__cdecl*)(int))\n'),
+    ('demumble ?Fxi@@YAHP6AHH@Z@Z', 'int __cdecl Fxi(int (__cdecl *)(int))\n'),
+    ('demumble ??0S@@QEAA@$$QEAU0@@Z', 'public: __cdecl S::S(struct S &&)\n'),
+    ('demumble ??_C@_02PCEFGMJL@hi?$AA@', '"hi"\n'),
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for OS X)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
     ('demumble -m hi _Z1fv ho _Z1gv', 'hi\nf()\nho\ng()\n'),
