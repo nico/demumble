@@ -3,10 +3,10 @@
 `demumble` demangles both POSIX and Visual Studio symbols. It runs on both
 POSIX and Windows.
 
-    $ ./demumble _Z4funcPci
+    $ demumble _Z4funcPci
     func(char*, int)
-    $ ./demumble "?Fx_i@@YAHP6AHH@Z@Z"
-    int __cdecl Fx_i(int (__cdecl*)(int))
+    $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
+    int __cdecl Fx_i(int (__cdecl *)(int))
     
 ## Download
 
@@ -53,7 +53,7 @@ Cross-platform: demumble runs on Windows. demumble can demangle Windows-style
 symbols (also when running on non-Windows).
 
     $ demumble '??2@YAPEAX_K@Z'
-    void * __ptr64 __cdecl operator new(unsigned __int64)
+    void * __cdecl operator new(unsigned __int64)
     $ c++filt '??2@YAPEAX_K@Z'
     ??2@YAPEAX_K@Z
 
