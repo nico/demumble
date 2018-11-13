@@ -6,7 +6,9 @@ tests = [
     ('demumble hello', 'hello\n'),
     ('demumble _Z4funcPci _Z1fv', 'func(char*, int)\nf()\n'),
     ('demumble < _Z4funcPci _Z1fv', 'func(char*, int)\nf()\n'),
-    ('demumble ?Fx_i@@YAHP6AHH@Z@Z', 'int __cdecl Fx_i(int (__cdecl*)(int))\n'),
+    ('demumble ?Fxi@@YAHP6AHH@Z@Z', 'int __cdecl Fxi(int (__cdecl *)(int))\n'),
+    ('demumble ??0S@@QEAA@$$QEAU0@@Z', 'public: __cdecl S::S(struct S &&)\n'),
+    ('demumble ??_C@_02PCEFGMJL@hi?$AA@', '"hi"\n'),
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for OS X)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
     ('demumble -m hi _Z1fv ho _Z1gv', 'hi\nf()\nho\ng()\n'),
@@ -35,10 +37,11 @@ for t in tests:
     cmd[0] = os.path.join(os.path.dirname(__file__) or '.', cmd[0])
     if '<' in cmd:
         p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             universal_newlines=True)
         out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
-        out = subprocess.check_output(cmd)
+        out = subprocess.check_output(cmd, universal_newlines=True)
     if (out != t[1] if isinstance(t[1], str) else t[1].match(out, re.M)):
         print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
         status = 1

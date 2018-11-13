@@ -3,10 +3,17 @@
 `demumble` demangles both POSIX and Visual Studio symbols. It runs on both
 POSIX and Windows.
 
-    $ ./demumble _Z4funcPci
+    $ demumble _Z4funcPci
     func(char*, int)
-    $ ./demumble "?Fx_i@@YAHP6AHH@Z@Z"
-    int __cdecl Fx_i(int (__cdecl*)(int))
+    $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
+    int __cdecl Fx_i(int (__cdecl *)(int))
+    
+## Download
+
+There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
+[releases page](https://github.com/nico/demumble/releases).
+
+## But why
 
 It has several nice features that c++filt lacks (and lacks many of c++filt's
 features I never use).
@@ -46,7 +53,7 @@ Cross-platform: demumble runs on Windows. demumble can demangle Windows-style
 symbols (also when running on non-Windows).
 
     $ demumble '??2@YAPEAX_K@Z'
-    void * __ptr64 __cdecl operator new(unsigned __int64)
+    void * __cdecl operator new(unsigned __int64)
     $ c++filt '??2@YAPEAX_K@Z'
     ??2@YAPEAX_K@Z
 
@@ -55,7 +62,6 @@ For example, print demangled names of all functions defined in a bitcode file:
 
     $ grep '^define' bitcode-win.ll  | demumble -m | head -1
     unsigned int __cdecl v8::RoundUpToPowerOfTwo32(unsigned int)
-
 
 ## Build instructions
 

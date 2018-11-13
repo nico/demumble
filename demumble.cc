@@ -4,23 +4,9 @@
 #include <string.h>
 #include <algorithm>
 
-extern "C" {
-char* __cxa_demangle(const char* mangled_name,
-                     char* buf,
-                     size_t* n,
-                     int* status);
+#include "llvm/Demangle/Demangle.h"
 
-typedef void* (*malloc_func_t)(size_t);
-typedef void (*free_func_t)(void*);
-char* __unDName(char* buffer,
-                const char* mangled,
-                int buflen,
-                malloc_func_t memget,
-                free_func_t memfree,
-                unsigned short int flags);
-}
-
-const char kDemumbleVersion[] = "1.0.0";
+const char kDemumbleVersion[] = "1.1.0";
 
 static void print_help(FILE* out) {
   fprintf(out,
@@ -29,8 +15,9 @@ static void print_help(FILE* out) {
 "if symbols are unspecified, reads from stdin.\n"
 "\n"
 "options:\n"
-"  -m        only print mangled names that were demangled, omit other output\n"
-"  -version  print demumble version (\"%s\")\n", kDemumbleVersion);
+"  -m         only print mangled names that were demangled, omit other output\n"
+"  -u         use unbuffered output\n"
+"  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
 }
 
 static bool starts_with(const char* s, const char* prefix) {
@@ -41,10 +28,10 @@ static void print_demangled(const char* s) {
   const char* cxa_in = s;
   if (starts_with(s, "__Z") || starts_with(s, "____Z"))
     cxa_in += 1;
-  if (char* itanium = __cxa_demangle(cxa_in, NULL, NULL, NULL)) {
+  if (char* itanium = llvm::itaniumDemangle(cxa_in, NULL, NULL, NULL)) {
     printf("%s", itanium);
     free(itanium);
-  } else if (char* ms = __unDName(NULL, s, 0, &malloc, &free, 0)) {
+  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
     printf("%s", ms);
     free(ms);
   } else {
@@ -80,6 +67,8 @@ int main(int argc, char* argv[]) {
       return 0;
     } else if (strcmp(argv[1], "-m") == 0) {
       print_mode = kPrintMatching;
+    } else if (strcmp(argv[1], "-u") == 0) {
+      setbuf(stdout, NULL);
     } else if (strcmp(argv[1], "--version") == 0) {
       printf("%s\n", kDemumbleVersion);
       return 0;
