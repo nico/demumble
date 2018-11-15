@@ -18,8 +18,10 @@ if (UNIX)
   endif()
 endif()
 
-# This is apparently the simplest way to statically link the CRT in CMake:
 if (WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:inline /EHs-c- /GR-")
+
+  # This is apparently the simplest way to statically link the CRT in CMake:
   string(TOUPPER "${CMAKE_BUILD_TYPE}" build)
   set(flag_var "CMAKE_CXX_FLAGS_${build}")
   if(${flag_var} MATCHES "/MD")
