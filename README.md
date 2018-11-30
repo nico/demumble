@@ -37,9 +37,11 @@ thing:
 
 Smart about filtering: Both c++filt and demumble can work as a stdin filter.
 demumble only demangles function symbols (which never look like other words),
-while c++filt defaults to demangling type names too, which are likely to look
-like regular words. demumble does demangle types when they're passed as args:
+while c++filt on macOS defaults to demangling type names too, which are likely
+to look like regular words. demumble does demangle types when they're passed
+as args without requiring the `--types` switch that c++filt needs on Linux:
 
+    # on macOS:
     $ echo 'I like Pi and _Znw' | c++filt
     I like int* and _Znw
     $ echo 'I like Pi and _Znw' | demumble
@@ -48,6 +50,9 @@ like regular words. demumble does demangle types when they're passed as args:
     int*
     $ demumble Pi
     int*
+    # on Linux:
+    $ c++filt Pi
+    Pi
 
 Cross-platform: demumble runs on Windows. demumble can demangle Windows-style
 symbols (also when running on non-Windows).
