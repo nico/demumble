@@ -1,6 +1,6 @@
 # demumble
 
-`demumble` demangles both POSIX and Visual Studio symbols. It runs on both
+`demumble` demangles both Itanium and Visual Studio symbols. It runs on both
 POSIX and Windows.
 
     $ demumble _Z4funcPci
