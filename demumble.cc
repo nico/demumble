@@ -6,7 +6,7 @@
 
 #include "llvm/Demangle/Demangle.h"
 
-const char kDemumbleVersion[] = "1.1.0";
+const char kDemumbleVersion[] = "1.2.0";
 
 static void print_help(FILE* out) {
   fprintf(out,
@@ -15,6 +15,7 @@ static void print_help(FILE* out) {
 "if symbols are unspecified, reads from stdin.\n"
 "\n"
 "options:\n"
+"  -b         print both demangled and mangled name\n"
 "  -m         only print mangled names that were demangled, omit other output\n"
 "  -u         use unbuffered output\n"
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
@@ -24,15 +25,15 @@ static bool starts_with(const char* s, const char* prefix) {
   return strncmp(s, prefix, strlen(prefix)) == 0;
 }
 
-static void print_demangled(const char* s) {
+static void print_demangled(const char* format, const char* s) {
   const char* cxa_in = s;
   if (starts_with(s, "__Z") || starts_with(s, "____Z"))
     cxa_in += 1;
   if (char* itanium = llvm::itaniumDemangle(cxa_in, NULL, NULL, NULL)) {
-    printf("%s", itanium);
+    printf(format, itanium, s);
     free(itanium);
   } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
-    printf("%s", ms);
+    printf(format, ms, s);
     free(ms);
   } else {
     printf("%s", s);
@@ -61,10 +62,13 @@ static bool is_plausible_itanium_prefix(char* s) {
 static char buf[8192];
 int main(int argc, char* argv[]) {
   enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
+  const char* print_format = "%s";
   while (argc > 1 && argv[1][0] == '-') {
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
       print_help(stdout);
       return 0;
+    } else if (strcmp(argv[1], "-b") == 0) {
+      print_format = "\"%s\" (%s)";
     } else if (strcmp(argv[1], "-m") == 0) {
       print_mode = kPrintMatching;
     } else if (strcmp(argv[1], "-u") == 0) {
@@ -85,7 +89,7 @@ int main(int argc, char* argv[]) {
     ++argv;
   }
   for (int i = 1; i < argc; ++i) {
-    print_demangled(argv[i]);
+    print_demangled(print_format, argv[i]);
     printf("\n");
   }
   if (argc == 1) {  // Read stdin instead.
@@ -125,7 +129,7 @@ int main(int argc, char* argv[]) {
 
         char tmp = cur[n_sym];
         cur[n_sym] = '\0';
-        print_demangled(cur);
+        print_demangled(print_format, cur);
         need_separator = true;
         cur[n_sym] = tmp;
 
