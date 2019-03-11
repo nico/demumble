@@ -62,11 +62,16 @@ symbols (also when running on non-Windows).
     $ c++filt '??2@YAPEAX_K@Z'
     ??2@YAPEAX_K@Z
 
-demumble also has a flag to make it print only things that look like symbols.
-For example, print demangled names of all functions defined in a bitcode file:
+Optionally print _only_ demangled things: For example, print demangled names of
+all functions defined in a bitcode file:
 
     $ grep '^define' bitcode-win.ll  | demumble -m | head -1
     unsigned int __cdecl v8::RoundUpToPowerOfTwo32(unsigned int)
+
+Optionally print both mangled and demangled names:
+
+    $ echo _ZN3fooC1Ev _ZN3fooC2Ev | ./demumble -b
+    "foo::foo()" (_ZN3fooC1Ev) "foo::foo()" (_ZN3fooC2Ev)
 
 ## Build instructions
 
