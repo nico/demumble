@@ -23,11 +23,15 @@ tests = [
      '.invocation function for block in blocksNRVO()\n'),
     ('demumble -m < .____Z10blocksNRVOv_block_invoke',
      'invocation function for block in blocksNRVO()\n'),
+    ('demumble -- -b', '-b\n'),
     ('demumble -- -m', '-m\n'),
     ('demumble -- -h', '-h\n'),
     ('demumble -h', re.compile('.*usage: demumble.*')),
     ('demumble --help', re.compile('.*usage: demumble.*')),
     ('demumble --version', re.compile('.*\..*')),
+    ('demumble -b hello', 'hello\n'),
+    ('demumble -b _Z1fv', '"f()" (_Z1fv)\n'),
+    ('demumble -b < _Z1fv', '"f()" (_Z1fv)\n'),
 ]
 
 status = 0
