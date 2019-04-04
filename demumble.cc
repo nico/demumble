@@ -21,15 +21,8 @@ static void print_help(FILE* out) {
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
 }
 
-static bool starts_with(const char* s, const char* prefix) {
-  return strncmp(s, prefix, strlen(prefix)) == 0;
-}
-
 static void print_demangled(const char* format, const char* s) {
-  const char* cxa_in = s;
-  if (starts_with(s, "__Z") || starts_with(s, "____Z"))
-    cxa_in += 1;
-  if (char* itanium = llvm::itaniumDemangle(cxa_in, NULL, NULL, NULL)) {
+  if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
     printf(format, itanium, s);
     free(itanium);
   } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {

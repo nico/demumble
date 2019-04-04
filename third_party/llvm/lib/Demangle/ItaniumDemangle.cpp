@@ -1,9 +1,8 @@
 //===------------------------- ItaniumDemangle.cpp ------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -354,15 +353,6 @@ char *llvm::itaniumDemangle(const char *MangledName, char *Buf,
   if (Status)
     *Status = InternalStatus;
   return InternalStatus == demangle_success ? Buf : nullptr;
-}
-
-bool llvm::itaniumFindTypesInMangledName(const char *MangledName, void *Ctx,
-                                         void (*Callback)(void *,
-                                                          const char *)) {
-  Demangler Parser(MangledName, MangledName + std::strlen(MangledName));
-  Parser.TypeCallback = Callback;
-  Parser.TypeCallbackContext = Ctx;
-  return Parser.parse() == nullptr;
 }
 
 ItaniumPartialDemangler::ItaniumPartialDemangler()

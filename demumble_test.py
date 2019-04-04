@@ -23,6 +23,7 @@ tests = [
      '.invocation function for block in blocksNRVO()\n'),
     ('demumble -m < .____Z10blocksNRVOv_block_invoke',
      'invocation function for block in blocksNRVO()\n'),
+    ('demumble _ZN2zx7channelD4Ev', 'zx::channel::~channel()\n'),
     ('demumble -- -b', '-b\n'),
     ('demumble -- -m', '-m\n'),
     ('demumble -- -h', '-h\n'),

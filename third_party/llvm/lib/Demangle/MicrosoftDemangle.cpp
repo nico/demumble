@@ -1,9 +1,8 @@
 //===- MicrosoftDemangle.cpp ----------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -18,7 +17,7 @@
 #include "llvm/Demangle/Demangle.h"
 #include "llvm/Demangle/MicrosoftDemangleNodes.h"
 
-#include "llvm/Demangle/Compiler.h"
+#include "llvm/Demangle/DemangleConfig.h"
 #include "llvm/Demangle/StringView.h"
 #include "llvm/Demangle/Utility.h"
 
@@ -40,7 +39,8 @@ struct NodeList {
   NodeList *Next = nullptr;
 };
 
-static bool isMemberPointer(StringView MangledName) {
+static bool isMemberPointer(StringView MangledName, bool &Error) {
+  Error = false;
   switch (MangledName.popFront()) {
   case '$':
     // This is probably an rvalue reference (e.g. $$Q), and you cannot have an
@@ -58,7 +58,8 @@ static bool isMemberPointer(StringView MangledName) {
     // what.
     break;
   default:
-    assert(false && "Ty is not a pointer type!");
+    Error = true;
+    return false;
   }
 
   // If it starts with a number, then 6 indicates a non-member function
@@ -89,9 +90,9 @@ static bool isMemberPointer(StringView MangledName) {
   case 'T':
     return true;
   default:
-    assert(false);
+    Error = true;
+    return false;
   }
-  return false;
 }
 
 static SpecialIntrinsicKind
@@ -263,7 +264,7 @@ Demangler::demangleSpecialTableSymbolNode(StringView &MangledName,
     NI->Name = "`RTTI Complete Object Locator'";
     break;
   default:
-    LLVM_BUILTIN_UNREACHABLE;
+    DEMANGLE_UNREACHABLE;
   }
   QualifiedNameNode *QN = demangleNameScopeChain(MangledName, NI);
   SpecialTableSymbolNode *STSN = Arena.alloc<SpecialTableSymbolNode>();
@@ -465,6 +466,10 @@ IdentifierNode *
 Demangler::demangleFunctionIdentifierCode(StringView &MangledName) {
   assert(MangledName.startsWith('?'));
   MangledName = MangledName.dropFront();
+  if (MangledName.empty()) {
+    Error = true;
+    return nullptr;
+  }
 
   if (MangledName.consumeFront("__"))
     return demangleFunctionIdentifierCode(
@@ -630,12 +635,13 @@ translateIntrinsicFunctionCode(char CH, FunctionIdentifierCodeGroup Group) {
   case FunctionIdentifierCodeGroup::DoubleUnder:
     return DoubleUnder[Index];
   }
-  LLVM_BUILTIN_UNREACHABLE;
+  DEMANGLE_UNREACHABLE;
 }
 
 IdentifierNode *
 Demangler::demangleFunctionIdentifierCode(StringView &MangledName,
                                           FunctionIdentifierCodeGroup Group) {
+  assert(!MangledName.empty());
   switch (Group) {
   case FunctionIdentifierCodeGroup::Basic:
     switch (char CH = MangledName.popFront()) {
@@ -1186,7 +1192,7 @@ Demangler::demangleStringLiteral(StringView &MangledName) {
   switch (MangledName.popFront()) {
   case '1':
     IsWcharT = true;
-    LLVM_FALLTHROUGH;
+    DEMANGLE_FALLTHROUGH;
   case '0':
     break;
   default:
@@ -1253,7 +1259,7 @@ Demangler::demangleStringLiteral(StringView &MangledName) {
       Result->Char = CharKind::Char32;
       break;
     default:
-      LLVM_BUILTIN_UNREACHABLE;
+      DEMANGLE_UNREACHABLE;
     }
     const unsigned NumChars = BytesDecoded / CharBytes;
     for (unsigned CharIndex = 0; CharIndex < NumChars; ++CharIndex) {
@@ -1275,12 +1281,16 @@ StringLiteralError:
   return nullptr;
 }
 
+// Returns MangledName's prefix before the first '@', or an error if
+// MangledName contains no '@' or the prefix has length 0.
 StringView Demangler::demangleSimpleString(StringView &MangledName,
                                            bool Memorize) {
   StringView S;
   for (size_t i = 0; i < MangledName.size(); ++i) {
     if (MangledName[i] != '@')
       continue;
+    if (i == 0)
+      break;
     S = MangledName.substr(0, i);
     MangledName = MangledName.dropFront(i + 1);
 
@@ -1317,8 +1327,10 @@ Demangler::demangleLocallyScopedNamePiece(StringView &MangledName) {
 
   NamedIdentifierNode *Identifier = Arena.alloc<NamedIdentifierNode>();
   MangledName.consumeFront('?');
-  auto Number = demangleNumber(MangledName);
-  assert(!Number.second);
+  uint64_t Number = 0;
+  bool IsNegative = false;
+  std::tie(Number, IsNegative) = demangleNumber(MangledName);
+  assert(!IsNegative);
 
   // One ? to terminate the number
   MangledName.consumeFront('?');
@@ -1336,7 +1348,7 @@ Demangler::demangleLocallyScopedNamePiece(StringView &MangledName) {
   OS << '`';
   Scope->output(OS, OF_Default);
   OS << '\'';
-  OS << "::`" << Number.first << "'";
+  OS << "::`" << Number << "'";
   OS << '\0';
   char *Result = OS.getBuffer();
   Identifier->Name = copyString(Result);
@@ -1379,9 +1391,12 @@ Demangler::demangleFullyQualifiedSymbolName(StringView &MangledName) {
     return nullptr;
 
   if (Identifier->kind() == NodeKind::StructorIdentifier) {
+    if (QN->Components->Count < 2) {
+      Error = true;
+      return nullptr;
+    }
     StructorIdentifierNode *SIN =
         static_cast<StructorIdentifierNode *>(Identifier);
-    assert(QN->Components->Count >= 2);
     Node *ClassNode = QN->Components->Nodes[QN->Components->Count - 2];
     SIN->Class = static_cast<IdentifierNode *>(ClassNode);
   }
@@ -1651,10 +1666,12 @@ TypeNode *Demangler::demangleType(StringView &MangledName,
   if (isTagType(MangledName))
     Ty = demangleClassType(MangledName);
   else if (isPointerType(MangledName)) {
-    if (isMemberPointer(MangledName))
+    if (isMemberPointer(MangledName, Error))
       Ty = demangleMemberPointerType(MangledName);
-    else
+    else if (!Error)
       Ty = demanglePointerType(MangledName);
+    else
+      return nullptr;
   } else if (isArrayType(MangledName))
     Ty = demangleArrayType(MangledName);
   else if (isFunctionType(MangledName)) {
@@ -1669,19 +1686,22 @@ TypeNode *Demangler::demangleType(StringView &MangledName,
     Ty = demangleCustomType(MangledName);
   } else {
     Ty = demanglePrimitiveType(MangledName);
-    if (!Ty || Error)
-      return Ty;
   }
 
+  if (!Ty || Error)
+    return Ty;
   Ty->Quals = Qualifiers(Ty->Quals | Quals);
   return Ty;
 }
 
-void Demangler::demangleThrowSpecification(StringView &MangledName) {
+bool Demangler::demangleThrowSpecification(StringView &MangledName) {
+  if (MangledName.consumeFront("_E"))
+    return true;
   if (MangledName.consumeFront('Z'))
-    return;
+    return false;
 
   Error = true;
+  return false;
 }
 
 FunctionSignatureNode *Demangler::demangleFunctionType(StringView &MangledName,
@@ -1705,7 +1725,7 @@ FunctionSignatureNode *Demangler::demangleFunctionType(StringView &MangledName,
 
   FTy->Params = demangleFunctionParameterList(MangledName);
 
-  demangleThrowSpecification(MangledName);
+  FTy->IsNoexcept = demangleThrowSpecification(MangledName);
 
   return FTy;
 }
@@ -1931,7 +1951,7 @@ ArrayTypeNode *Demangler::demangleArrayType(StringView &MangledName) {
   for (uint64_t I = 0; I < Rank; ++I) {
     uint64_t D = 0;
     std::tie(D, IsNegative) = demangleNumber(MangledName);
-    if (IsNegative) {
+    if (Error || IsNegative) {
       Error = true;
       return nullptr;
     }
@@ -1988,6 +2008,8 @@ Demangler::demangleFunctionParameterList(StringView &MangledName) {
 
     *Current = Arena.alloc<NodeList>();
     TypeNode *TN = demangleType(MangledName, QualifierMangleMode::Drop);
+    if (!TN || Error)
+      return nullptr;
 
     (*Current)->N = TN;
 
@@ -2074,15 +2096,15 @@ Demangler::demangleTemplateParameterList(StringView &MangledName) {
       case 'J':
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
-        LLVM_FALLTHROUGH;
+        DEMANGLE_FALLTHROUGH;
       case 'I':
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
-        LLVM_FALLTHROUGH;
+        DEMANGLE_FALLTHROUGH;
       case 'H':
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
-        LLVM_FALLTHROUGH;
+        DEMANGLE_FALLTHROUGH;
       case '1':
         break;
       default:
@@ -2108,13 +2130,13 @@ Demangler::demangleTemplateParameterList(StringView &MangledName) {
       case 'G':
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
-        LLVM_FALLTHROUGH;
+        DEMANGLE_FALLTHROUGH;
       case 'F':
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
         TPRN->ThunkOffsets[TPRN->ThunkOffsetCount++] =
             demangleSigned(MangledName);
-        LLVM_FALLTHROUGH;
+        DEMANGLE_FALLTHROUGH;
       case '0':
         break;
       default:
