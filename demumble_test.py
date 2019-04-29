@@ -47,7 +47,7 @@ for t in tests:
         out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
         out = subprocess.check_output(cmd, universal_newlines=True)
-    if (out != t[1] if isinstance(t[1], str) else t[1].match(out, re.M)):
+    if (out != t[1] if isinstance(t[1], str) else not t[1].match(out)):
         print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
         status = 1
 print("passed" if status == 0 else "failed")
