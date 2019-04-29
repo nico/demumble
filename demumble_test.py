@@ -33,6 +33,10 @@ tests = [
     ('demumble -b hello', 'hello\n'),
     ('demumble -b _Z1fv', '"f()" (_Z1fv)\n'),
     ('demumble -b < _Z1fv', '"f()" (_Z1fv)\n'),
+    ('demumble -bm < _Z1fv!foo_bar', '"f()" (_Z1fv)\n'),
+    ('demumble -mb < _Z1fv!foo_bar', '"f()" (_Z1fv)\n'),
+    ('demumble --foo < bar', re.compile(".*unrecognized option `--foo'.*")),
+    ('demumble -bx < bar', re.compile(".*unrecognized option `x' in `-bx'.*")),
 ]
 
 status = 0
