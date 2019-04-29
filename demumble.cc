@@ -8,7 +8,7 @@
 
 const char kDemumbleVersion[] = "1.2.0.git";
 
-static void print_help(FILE* out) {
+static int print_help(FILE* out) {
   fprintf(out,
 "usage: demumble [options] [symbols...]\n"
 "\n"
@@ -19,6 +19,7 @@ static void print_help(FILE* out) {
 "  -m         only print mangled names that were demangled, omit other output\n"
 "  -u         use unbuffered output\n"
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
+  return out == stdout ? 0 : 1;
 }
 
 static void print_demangled(const char* format, const char* s) {
@@ -58,8 +59,7 @@ int main(int argc, char* argv[]) {
   const char* print_format = "%s";
   while (argc > 1 && argv[1][0] == '-') {
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-      print_help(stdout);
-      return 0;
+      return print_help(stdout);
     } else if (strcmp(argv[1], "-b") == 0) {
       print_format = "\"%s\" (%s)";
     } else if (strcmp(argv[1], "-m") == 0) {
@@ -75,8 +75,7 @@ int main(int argc, char* argv[]) {
       break;
     } else {
       fprintf(stderr, "demumble: unrecognized option `%s'\n", argv[1]);
-      print_help(stderr);
-      return 1;
+      return print_help(stderr);
     }
     --argc;
     ++argv;
