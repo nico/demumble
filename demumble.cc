@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
       ++argv;
       break;
     } else if (argv[1][0] == '-' && argv[1][1] != '-') {
-      for (int i = 1; i < strlen(argv[1]); ++i)
+      for (size_t i = 1; i < strlen(argv[1]); ++i)
         switch (argv[1][i]) {
         case 'b': print_format = "\"%s\" (%s)"; break;
         case 'h': return print_help(stdout);
