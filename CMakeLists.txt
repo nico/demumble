@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
-project(demumble C CXX)
+cmake_minimum_required(VERSION 3.2.0 FATAL_ERROR)
+project(demumble CXX)
 
 if (UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-exceptions -fno-rtti")
