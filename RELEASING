@@ -1,6 +1,6 @@
 Push new release branch:
 1. make sure branches 'master' and 'release' are synced up locally
-2. update src/demumble.cc with new version (with ".git"), then
+2. update demumble.cc with new version (with ".git"), then
        git commit -am 'mark this 1.0.0.git'
 3. git checkout release; git merge master
 4. fix version number in src/version.cc (it will likely conflict in the above)
