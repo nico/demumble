@@ -6,9 +6,9 @@
 
 #include "llvm/Demangle/Demangle.h"
 
-const char kDemumbleVersion[] = "1.2.0";
+const char kDemumbleVersion[] = "1.2.1";
 
-static void print_help(FILE* out) {
+static int print_help(FILE* out) {
   fprintf(out,
 "usage: demumble [options] [symbols...]\n"
 "\n"
@@ -19,17 +19,11 @@ static void print_help(FILE* out) {
 "  -m         only print mangled names that were demangled, omit other output\n"
 "  -u         use unbuffered output\n"
 "  --version  print demumble version (\"%s\")\n", kDemumbleVersion);
-}
-
-static bool starts_with(const char* s, const char* prefix) {
-  return strncmp(s, prefix, strlen(prefix)) == 0;
+  return out == stdout ? 0 : 1;
 }
 
 static void print_demangled(const char* format, const char* s) {
-  const char* cxa_in = s;
-  if (starts_with(s, "__Z") || starts_with(s, "____Z"))
-    cxa_in += 1;
-  if (char* itanium = llvm::itaniumDemangle(cxa_in, NULL, NULL, NULL)) {
+  if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
     printf(format, itanium, s);
     free(itanium);
   } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
@@ -64,15 +58,8 @@ int main(int argc, char* argv[]) {
   enum { kPrintAll, kPrintMatching } print_mode = kPrintAll;
   const char* print_format = "%s";
   while (argc > 1 && argv[1][0] == '-') {
-    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-      print_help(stdout);
-      return 0;
-    } else if (strcmp(argv[1], "-b") == 0) {
-      print_format = "\"%s\" (%s)";
-    } else if (strcmp(argv[1], "-m") == 0) {
-      print_mode = kPrintMatching;
-    } else if (strcmp(argv[1], "-u") == 0) {
-      setbuf(stdout, NULL);
+    if (strcmp(argv[1], "--help") == 0) {
+      return print_help(stdout);
     } else if (strcmp(argv[1], "--version") == 0) {
       printf("%s\n", kDemumbleVersion);
       return 0;
@@ -80,10 +67,21 @@ int main(int argc, char* argv[]) {
       --argc;
       ++argv;
       break;
+    } else if (argv[1][0] == '-' && argv[1][1] != '-') {
+      for (int i = 1; i < strlen(argv[1]); ++i)
+        switch (argv[1][i]) {
+        case 'b': print_format = "\"%s\" (%s)"; break;
+        case 'h': return print_help(stdout);
+        case 'm': print_mode = kPrintMatching; break;
+        case 'u': setbuf(stdout, NULL); break;
+        default:
+          fprintf(stderr, "demumble: unrecognized option `%c' in `%s'\n",
+                  argv[1][i], argv[1]);
+          return print_help(stderr);
+        }
     } else {
       fprintf(stderr, "demumble: unrecognized option `%s'\n", argv[1]);
-      print_help(stderr);
-      return 1;
+      return print_help(stderr);
     }
     --argc;
     ++argv;
