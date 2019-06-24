@@ -10,4 +10,4 @@ Push new release branch:
        # Push the 1.0.0.git change on master too:
        git checkout master; git push origin master
 6. add binaries to https://github.com/nico/demumble/releases
-   build them with `./dist.py`
+   build them with `./dist.py` (on the release branch)
