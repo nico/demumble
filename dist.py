@@ -34,6 +34,9 @@ clangcl = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang-cl'
 clangxx = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang++'
 lldlink = crsrc + '/third_party/llvm-build/Release+Asserts/bin/lld-link'
 
+# FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
+# has a way to build eu-strip on macOS, which is arguably a smaller dep
+# than llvm-strip.
 linux_strip = os.path.join(os.path.expanduser('~'),
                            'src/llvm-project/out/gn/bin/llvm-strip')
 
@@ -70,9 +73,6 @@ with buildir('buildlinux'):
         '-DCMAKE_SYSTEM_NAME=Linux',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
-    # FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
-    # has a way to build eu-strip on macOS, which is arguably a smaller dep
-    # than llvm-strip.
     subprocess.check_call([linux_strip, 'demumble'])
     subprocess.check_call(['zip', '-q9', 'demumble-linux.zip', 'demumble'])
     subprocess.check_call(['mv', 'demumble-linux.zip', '..'])
