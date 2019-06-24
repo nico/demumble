@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 
 # Builds demumble for Mac, Linux, Windows.  Must run on a Mac.
-# Needs a chromium checkout that was synced with target_os=['win'] to get
-# the Windows toolchain. You must run
+# Needs a chromium checkout at ~/src/chrome/src that was synced with
+# target_os=['win'] to get the Windows toolchain. You must run
 # `build/linux/sysroot_scripts/install-sysroot.py --arch amd64` once to
 # get the linux toolchain.
 
+# Also needs a GN build of llvm at ~/src/llvm-project/out/gn for llvm-strip
+# for stripping the Linux binary.
+
 # Doesn't run tests, so make sure to run `./demumble_test.py` on all 3 platforms
 # before running this script.
+
+# After this script finishes successfully, the cwd will contain
+# demumble-mac.zip, demumble-linux.zip, demumble-windows.zip which each contain
+# a demumble binary built for that OS, ready for releasing (assuming the script
+# was run on the release branch).
 
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling has
 # some documentation on cross builds with cmake.
@@ -19,12 +27,15 @@ import os
 import subprocess
 import sys
 
-crsrc = '/Users/thakis/src/chrome/src'
+crsrc = os.path.join(os.path.expanduser('~'), 'src/chrome/src')
 if len(sys.argv) > 1:
   crsrc = os.path.abspath(sys.argv[1])
 clangcl = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang-cl'
 clangxx = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang++'
 lldlink = crsrc + '/third_party/llvm-build/Release+Asserts/bin/lld-link'
+
+linux_strip = os.path.join(os.path.expanduser('~'),
+                           'src/llvm-project/out/gn/bin/llvm-strip')
 
 cmake = '/Applications/CMake.app/Contents/bin/cmake'
 call_cmake = [cmake, '-GNinja', '..', '-DCMAKE_BUILD_TYPE=Release']
@@ -43,6 +54,7 @@ def buildir(newdir):
     finally:
         os.chdir(prevdir)
 
+subprocess.check_call(['rm', '-rf', 'buildlinux', 'buildmac', 'buildwin'])
 
 # Linux.
 linux_sysroot = crsrc + '/build/linux/debian_jessie_amd64-sysroot'
@@ -56,11 +68,20 @@ with buildir('buildlinux'):
         '-DCMAKE_SYSTEM_NAME=Linux',
         ])
     subprocess.check_call(['ninja', 'demumble'])
+    # FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
+    # has a way to build eu-strip on macOS, which is arguably a smaller dep
+    # than llvm-strip.
+    subprocess.check_call([linux_strip, 'demumble'])
+    subprocess.check_call(['zip', '-9', 'demumble-linux.zip', 'demumble'])
+    subprocess.check_call(['mv', 'demumble-linux.zip', '..'])
 
 # Mac.
 with buildir('buildmac'):
     subprocess.check_call(call_cmake + [ '-DCMAKE_CXX_COMPILER=' + clangxx ])
     subprocess.check_call(['ninja', 'demumble'])
+    subprocess.check_call(['strip', 'demumble'])
+    subprocess.check_call(['zip', '-9', 'demumble-mac.zip', 'demumble'])
+    subprocess.check_call(['mv', 'demumble-mac.zip', '..'])
 
 # Win.
 win_sysroot = glob.glob(
@@ -86,3 +107,6 @@ with buildir('buildwin'):
         '-DCMAKE_SYSTEM_NAME=Windows',
         ])
     subprocess.check_call(['ninja', 'demumble'])
+    # No stripping on Windows.
+    subprocess.check_call(['zip', '-9', 'demumble-win.zip', 'demumble.exe'])
+    subprocess.check_call(['mv', 'demumble-win.zip', '..'])
