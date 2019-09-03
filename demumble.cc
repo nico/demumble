@@ -34,7 +34,7 @@ static void print_demangled(const char* format, const char* s) {
   }
 }
 
-static bool is_mangle_char_posix(char c) {
+static bool is_mangle_char_itanium(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '_' || c == '$';
 }
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
           while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]))
             ++n_sym;
         else if (is_plausible_itanium_prefix(cur))
-          while (cur + n_sym != end && is_mangle_char_posix(cur[n_sym]))
+          while (cur + n_sym != end && is_mangle_char_itanium(cur[n_sym]))
             ++n_sym;
         else {
           if (print_mode == kPrintAll)
