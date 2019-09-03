@@ -36,7 +36,7 @@ static void print_demangled(const char* format, const char* s) {
 
 static bool is_mangle_char_posix(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-         (c >= '0' && c <= '9') || c == '_';
+         (c >= '0' && c <= '9') || c == '_' || c == '$';
 }
 
 static bool is_mangle_char_win(char c) {
