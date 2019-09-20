@@ -153,7 +153,7 @@ public:
 
   void dumpBackReferences();
 
-private:
+//private:
   SymbolNode *demangleEncodedSymbol(StringView &MangledName,
                                     QualifiedNameNode *QN);
   SymbolNode *demangleDeclarator(StringView &MangledName);

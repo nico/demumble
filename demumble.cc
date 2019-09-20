@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
       char* end = cur + strlen(cur);
 
       while (cur != end) {
-        size_t special = strcspn(cur, "_?");
+        size_t special = strcspn(cur, "_?.");
         if (print_mode == kPrintAll)
           printf("%.*s", static_cast<int>(special), cur);
         else if (need_separator)
@@ -112,9 +112,10 @@ int main(int argc, char* argv[]) {
           break;
 
         size_t n_sym = 0;
-        if (*cur == '?')
-          while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]))
+        if (*cur == '?' || *cur == '.')
+          do
             ++n_sym;
+          while (cur + n_sym != end && is_mangle_char_win(cur[n_sym]));
         else if (is_plausible_itanium_prefix(cur))
           while (cur + n_sym != end && is_mangle_char_itanium(cur[n_sym]))
             ++n_sym;

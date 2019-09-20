@@ -2323,7 +2323,12 @@ char *llvm::microsoftDemangle(const char *MangledName, char *Buf, size_t *N,
   OutputStream S;
 
   StringView Name{MangledName};
-  SymbolNode *AST = D.parse(Name);
+  Node *AST = nullptr;
+  bool wasTypeinfoName;
+  if ((wasTypeinfoName = Name.consumeFront('.')))
+    AST = D.demangleType(Name, QualifierMangleMode::Result);
+  else
+    AST = D.parse(Name);
 
   if (Flags & MSDF_DumpBackrefs)
     D.dumpBackReferences();
@@ -2333,6 +2338,8 @@ char *llvm::microsoftDemangle(const char *MangledName, char *Buf, size_t *N,
   else if (!initializeOutputStream(Buf, N, S, 1024))
     InternalStatus = demangle_memory_alloc_failure;
   else {
+    if (wasTypeinfoName)
+      S << "typeinfo name for ";
     AST->output(S, OF_Default);
     S += '\0';
     if (N != nullptr)
