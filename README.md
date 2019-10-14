@@ -7,7 +7,7 @@ POSIX and Windows.
     func(char*, int)
     $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
     int __cdecl Fx_i(int (__cdecl *)(int))
-    
+
 ## Download
 
 There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
@@ -73,14 +73,23 @@ Optionally print both mangled and demangled names:
     $ echo _ZN3fooC1Ev _ZN3fooC2Ev | ./demumble -b
     "foo::foo()" (_ZN3fooC1Ev) "foo::foo()" (_ZN3fooC2Ev)
 
+## Python Usage
+
+The python script is a simple wrapper around the C++ library. There are 4 APIs
+
+    demangle(mangled_name): Demangle a msvc, itanium, or RTTI style name
+    is_mangle_char_itanium(c): Is the given character within the valid range for itanium, and RTTI style names
+    is_mangle_char_win(c): Is the given character within the valid range for windows, and RTTI style names
+    version(): Get the library version
+
+The script may also be invoked on the command line directly
+```
+$ python demumble.py ?Fx_i@@YAHP6AHH@Z@Z
+Loaded demumble version: 1.2.2
+int __cdecl Fx_i(int (__cdecl *)(int))
+```
+
 ## Build instructions
 
-Use cmake to build: `cmake -G Ninja && ninja`
-
-Run tests after building: `python demumble_test.py`
-
-`cxa_demangle.cpp` needs more C++11 than Visual Studio 2013 supports, so
-to build on Windows you need to use Visual Studion 2015 or use clang-cl
-as C++ compiler like so:
-
-    cmake -G Ninja -DCMAKE_CXX_COMPILER=path/to/llvm-build/bin/clang-cl.exe
+This is a cmake project, the windows build requires Visual Studio. You may build with the two included scripts:
+`build_unix.sh` and `build_win.bat`. To create the python `.whl` run the respective build scripts on windows and linux machines and copy the build `.so` and `.dll` to the same machine. On that machine run `python3 setup.py bdist_wheel`. Alternatively just run `python3 setup.py install` for a local installation.

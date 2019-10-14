@@ -31,11 +31,26 @@ if (WIN32)
 endif()
 
 include_directories(third_party/llvm/include)
-add_executable(demumble
-               demumble.cc
+
+# Shared Lib
+add_library(demumble_shared SHARED
+               demumble.cpp
                third_party/llvm/lib/Demangle/ItaniumDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp
 )
-set_target_properties(demumble PROPERTIES CXX_STANDARD 11
+
+set_target_properties(demumble_shared PROPERTIES CXX_STANDARD 11
                                           CXX_STANDARD_REQUIRED ON)
+set_target_properties(demumble_shared PROPERTIES OUTPUT_NAME demumble_shared)
+
+# Static Lib
+add_library(demumble_static STATIC
+               demumble.cpp
+               third_party/llvm/lib/Demangle/ItaniumDemangle.cpp
+               third_party/llvm/lib/Demangle/MicrosoftDemangle.cpp
+               third_party/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp
+)
+set_target_properties(demumble_static PROPERTIES CXX_STANDARD 11
+                                          CXX_STANDARD_REQUIRED ON)
+set_target_properties(demumble_static PROPERTIES OUTPUT_NAME demumble_static)
