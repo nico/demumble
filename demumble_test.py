@@ -37,6 +37,9 @@ tests = [
     ('demumble -mb < _Z1fv!foo_bar', '"f()" (_Z1fv)\n'),
     ('demumble --foo < bar', re.compile(".*unrecognized option `--foo'.*")),
     ('demumble -bx < bar', re.compile(".*unrecognized option `x' in `-bx'.*")),
+    ('demumble < _ZZ3fooiENK3$_0clEi',
+     'foo(int)::$_0::operator()(int) const\n'),
+    ('demumble .?AVNet@@', "class Net `RTTI Type Descriptor Name'\n"),
 ]
 
 status = 0

@@ -2,9 +2,9 @@
 
 # Builds demumble for Mac, Linux, Windows.  Must run on a Mac.
 # Needs a chromium checkout at ~/src/chrome/src that was synced with
-# target_os=['win'] to get the Windows toolchain. You must run
-# `build/linux/sysroot_scripts/install-sysroot.py --arch amd64` once to
-# get the linux toolchain.
+# target_os=['win'] to get the Windows toolchain, and to get lld.
+# You must run `build/linux/sysroot_scripts/install-sysroot.py --arch amd64`
+# once to get the linux toolchain.
 
 # Also needs a GN build of llvm at ~/src/llvm-project/out/gn for llvm-strip
 # for stripping the Linux binary.
@@ -34,6 +34,9 @@ clangcl = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang-cl'
 clangxx = crsrc + '/third_party/llvm-build/Release+Asserts/bin/clang++'
 lldlink = crsrc + '/third_party/llvm-build/Release+Asserts/bin/lld-link'
 
+# FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
+# has a way to build eu-strip on macOS, which is arguably a smaller dep
+# than llvm-strip.
 linux_strip = os.path.join(os.path.expanduser('~'),
                            'src/llvm-project/out/gn/bin/llvm-strip')
 
@@ -58,7 +61,7 @@ subprocess.check_call(['rm', '-rf', 'buildlinux', 'buildmac', 'buildwin'])
 devnull = open(os.devnull,"w")
 
 # Linux.
-linux_sysroot = crsrc + '/build/linux/debian_jessie_amd64-sysroot'
+linux_sysroot = crsrc + '/build/linux/debian_sid_amd64-sysroot'
 cflags = [ '--sysroot', linux_sysroot, '--target=x86_64-linux-gnu', ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildlinux'):
@@ -70,9 +73,6 @@ with buildir('buildlinux'):
         '-DCMAKE_SYSTEM_NAME=Linux',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
-    # FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
-    # has a way to build eu-strip on macOS, which is arguably a smaller dep
-    # than llvm-strip.
     subprocess.check_call([linux_strip, 'demumble'])
     subprocess.check_call(['zip', '-q9', 'demumble-linux.zip', 'demumble'])
     subprocess.check_call(['mv', 'demumble-linux.zip', '..'])
