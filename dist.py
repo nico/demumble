@@ -9,13 +9,13 @@
 # Also needs a GN build of llvm at ~/src/llvm-project/out/gn for llvm-strip
 # for stripping the Linux binary.
 
-# Doesn't run tests, so make sure to run `./demumble_test.py` on all 3 platforms
-# before running this script.
+# Run this in the demumble root directory while on the "release" branch.
+# It'll create subcirectories "buildlinux", "buildmac", "buildwin" to build
+# for each platforms, and then puts the final built products in
+# demumble-{linux,mac,win}.zip.
 
-# After this script finishes successfully, the cwd will contain
-# demumble-mac.zip, demumble-linux.zip, demumble-windows.zip which each contain
-# a demumble binary built for that OS, ready for releasing (assuming the script
-# was run on the release branch).
+# Runs demumble_test.py on mac at the end, but best make sure it passes on
+# on all 3 platforms before running this script.
 
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/CrossCompiling has
 # some documentation on cross builds with cmake.
@@ -58,7 +58,9 @@ def buildir(newdir):
         os.chdir(prevdir)
 
 subprocess.check_call(['rm', '-rf', 'buildlinux', 'buildmac', 'buildwin'])
-devnull = open(os.devnull,"w")
+subprocess.check_call(
+    ['rm', '-f', 'demumble-linux.zip', 'demumble-mac.zip', 'demumble-win.zip'])
+devnull = open(os.devnull, 'w')
 
 # Linux.
 linux_sysroot = crsrc + '/build/linux/debian_sid_amd64-sysroot'
