@@ -22,11 +22,11 @@ static int print_help(FILE* out) {
   return out == stdout ? 0 : 1;
 }
 
-static void print_demangled(const char* format, const char* s) {
+static void print_demangled(const char* format, const char* s, size_t* n_used) {
   if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
     printf(format, itanium, s);
     free(itanium);
-  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL, NULL)) {
+  } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL, NULL, NULL)) {
     printf(format, ms, s);
     free(ms);
   } else {
@@ -87,8 +87,11 @@ int main(int argc, char* argv[]) {
     ++argv;
   }
   for (int i = 1; i < argc; ++i) {
-    print_demangled(print_format, argv[i]);
+    size_t used = strlen(argv[i]);
+    print_demangled(print_format, argv[i], &used);
     printf("\n");
+    if (used < strlen(argv[i]))
+      printf("  unused suffix: %s\n", argv[i] + used);
   }
   if (argc == 1) {  // Read stdin instead.
     // By default, don't demangle types.  Mangled function names are unlikely
@@ -127,11 +130,12 @@ int main(int argc, char* argv[]) {
 
         char tmp = cur[n_sym];
         cur[n_sym] = '\0';
-        print_demangled(print_format, cur);
+        size_t n_used = n_sym;
+        print_demangled(print_format, cur, &n_used);
         need_separator = true;
         cur[n_sym] = tmp;
 
-        cur += n_sym;
+        cur += n_used;
       }
     }
   }

@@ -40,6 +40,9 @@ tests = [
     ('demumble < _ZZ3fooiENK3$_0clEi',
      'foo(int)::$_0::operator()(int) const\n'),
     ('demumble .?AVNet@@', "class Net `RTTI Type Descriptor Name'\n"),
+    ('demumble < asdf?x@@3HAjkl', 'asdfint xjkl\n'),
+    ('demumble < asdf?x@@3Hjkl', 'asdf?x@@3Hjkl\n'),
+    ('demumble ?x@@3HAjkl', 'int x\n  unused suffix: jkl\n'),
 ]
 
 status = 0
