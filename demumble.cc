@@ -26,7 +26,7 @@ static void print_demangled(const char* format, const char* s) {
   if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
     printf(format, itanium, s);
     free(itanium);
-  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
+  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL, NULL)) {
     printf(format, ms, s);
     free(ms);
   } else {
