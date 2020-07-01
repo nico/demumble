@@ -19,9 +19,9 @@ It has several nice features that c++filt lacks (and lacks many of c++filt's
 features I never use).
 
 Smart about underscores: C++ symbols have an additional leading underscore on
-OS X. `operator new` is mangled as `_Znw` on Linux but `__Znw` on Mac. OS X's
+macOS. `operator new` is mangled as `_Znw` on Linux but `__Znw` on Mac. macOS's
 c++filt automatically strips one leading underscore, but Linux's c++filt
-doesn't. So if you want to demangle a Linux symbol on OS X, you need to pass
+doesn't. So if you want to demangle a Linux symbol on macOS, you need to pass
 `-n` to tell it to not strip the underscore, and if you want to demangle an OS
 X symbol on Linux you likewise need to pass `-_`. demumble just does the right
 thing:
