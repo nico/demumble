@@ -84,6 +84,7 @@ with buildir('buildmac'):
     print 'building mac'
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangxx,
+        '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
     subprocess.check_call(['strip', 'demumble'])
