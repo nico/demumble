@@ -37,5 +37,5 @@ add_executable(demumble
                third_party/llvm/lib/Demangle/MicrosoftDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp
 )
-set_target_properties(demumble PROPERTIES CXX_STANDARD 11
+set_target_properties(demumble PROPERTIES CXX_STANDARD 14
                                           CXX_STANDARD_REQUIRED ON)
