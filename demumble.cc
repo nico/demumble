@@ -26,6 +26,9 @@ static void print_demangled(const char* format, const char* s, size_t* n_used) {
   if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
     printf(format, itanium, s);
     free(itanium);
+  } else if (char* rust = llvm::rustDemangle(s, NULL, NULL, NULL)) {
+    printf(format, rust, s);
+    free(rust);
   } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL, NULL, NULL)) {
     printf(format, ms, s);
     free(ms);
@@ -37,6 +40,12 @@ static void print_demangled(const char* format, const char* s, size_t* n_used) {
 static bool is_mangle_char_itanium(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '_' || c == '$';
+}
+
+static bool is_mangle_char_rust(char c) {
+  // See https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || c == '_';
 }
 
 static bool is_mangle_char_win(char c) {
@@ -51,6 +60,11 @@ static bool is_plausible_itanium_prefix(char* s) {
   char prefix[N + 1];
   strncpy(prefix, s, N); prefix[N] = '\0';
   return strstr(prefix, "_Z");
+}
+
+static bool is_plausible_rust_prefix(char* s) {
+  // Rust symbols start with "_R".
+  return s[0] == '_' && s[1] == 'R';
 }
 
 static char buf[8192];
@@ -120,6 +134,9 @@ int main(int argc, char* argv[]) {
             ++n_sym;
         else if (is_plausible_itanium_prefix(cur))
           while (cur + n_sym != end && is_mangle_char_itanium(cur[n_sym]))
+            ++n_sym;
+        else if (is_plausible_rust_prefix(cur))
+          while (cur + n_sym != end && is_mangle_char_rust(cur[n_sym]))
             ++n_sym;
         else {
           if (print_mode == kPrintAll)
