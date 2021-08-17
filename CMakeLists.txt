@@ -33,9 +33,11 @@ endif()
 include_directories(third_party/llvm/include)
 add_executable(demumble
                demumble.cc
+               third_party/llvm/lib/Demangle/Demangle.cpp
                third_party/llvm/lib/Demangle/ItaniumDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp
+               third_party/llvm/lib/Demangle/RustDemangle.cpp
 )
 set_target_properties(demumble PROPERTIES CXX_STANDARD 14
                                           CXX_STANDARD_REQUIRED ON)

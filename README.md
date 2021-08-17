@@ -1,13 +1,13 @@
 # demumble
 
-`demumble` demangles both Itanium and Visual Studio symbols. It runs on both
-POSIX and Windows.
+`demumble` demangles both Itanium, Rust, and Visual Studio symbols. It runs on
+both POSIX and Windows.
 
     $ demumble _Z4funcPci
     func(char*, int)
     $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
     int __cdecl Fx_i(int (__cdecl *)(int))
-    
+
 ## Download
 
 There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
