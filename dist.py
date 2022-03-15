@@ -100,9 +100,8 @@ winenv = json.load(open(win_bindir + '/SetEnv.x64.json'))['env']
 for k in ['INCLUDE', 'LIB']:
   winenv[k] = [os.path.join(*([win_sysroot] + e)) for e in winenv[k]]
 def quote(s): return '"' + s + '"'
-win_include = [quote('-imsvc' + i) for i in winenv['INCLUDE']]
 win_lib = [quote('/libpath:' + i) for i in winenv['LIB']]
-cflags = ['--target=x86_64-pc-windows'] + win_include
+cflags = ['--target=x86_64-pc-windows', '/winsysroot' + win_sysroot]
 with buildir('buildwin'):
     print 'building windows'
     subprocess.check_call(call_cmake + [
