@@ -102,16 +102,17 @@ for k in ['INCLUDE', 'LIB']:
 def quote(s): return '"' + s + '"'
 win_lib = [quote('/libpath:' + i) for i in winenv['LIB']]
 cflags = ['--target=x86_64-pc-windows', '/winsysroot' + win_sysroot]
+# Without /manifest:no, cmake creates a default manifest file -- and
+# explicitly calls mt.exe (which we don't have in a cross build).
+# This also removes a dependency on rc.exe -- without this we'd also
+# have to set CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY.
+ldflags = ['/manifest:no'] + win_lib
 with buildir('buildwin'):
     print 'building windows'
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangcl,
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
-        # Without /manifest:no, cmake creates a default manifest file -- and
-        # explicitly calls mt.exe (which we don't have in a cross build).
-        # This also removes a dependency on rc.exe -- without this we'd also
-        # have to set CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY.
-        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(['/manifest:no'] + win_lib),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
         '-DCMAKE_LINKER=' + lldlink,
         '-DCMAKE_SYSTEM_NAME=Windows',
         ], stdout=devnull)
