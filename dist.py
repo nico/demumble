@@ -94,13 +94,14 @@ with buildir('buildmac'):
 # Win.
 win_sysroot = glob.glob(
     crsrc + '/third_party/depot_tools/win_toolchain/vs_files/*')[0]
-win_bindir = win_sysroot + '/win_sdk/bin'
+win_bindir = win_sysroot + '/Windows Kits/10/bin'
 # This json file looks like http://codepad.org/kmfgf0UL
 winenv = json.load(open(win_bindir + '/SetEnv.x64.json'))['env']
 for k in ['INCLUDE', 'LIB']:
-  winenv[k] = [os.path.join(*([win_bindir] + e)) for e in winenv[k]]
-win_include = ['-imsvc' + i for i in winenv['INCLUDE']]
-win_lib = ['/libpath:' + i for i in winenv['LIB']]
+  winenv[k] = [os.path.join(*([win_sysroot] + e)) for e in winenv[k]]
+def quote(s): return '"' + s + '"'
+win_include = [quote('-imsvc' + i) for i in winenv['INCLUDE']]
+win_lib = [quote('/libpath:' + i) for i in winenv['LIB']]
 cflags = ['--target=x86_64-pc-windows'] + win_include
 with buildir('buildwin'):
     print 'building windows'
