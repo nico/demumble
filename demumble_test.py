@@ -63,5 +63,5 @@ for t in tests:
     if (out != t[1] if isinstance(t[1], str) else not t[1].match(out)):
         print(f"`{t[0]}`: Expected '{t[1]}', got '{out}'")
         status = 1
-print("passed" if status == 0 else "failed")
+print('passed' if status == 0 else 'failed')
 sys.exit(status)
