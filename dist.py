@@ -94,19 +94,13 @@ with buildir('buildmac'):
 # Win.
 win_sysroot = glob.glob(
     crsrc + '/third_party/depot_tools/win_toolchain/vs_files/*')[0]
-win_bindir = win_sysroot + '/Windows Kits/10/bin'
-# This json file looks like http://codepad.org/kmfgf0UL
-winenv = json.load(open(win_bindir + '/SetEnv.x64.json'))['env']
-for k in ['INCLUDE', 'LIB']:
-  winenv[k] = [os.path.join(*([win_sysroot] + e)) for e in winenv[k]]
-def quote(s): return '"' + s + '"'
-win_lib = [quote('/libpath:' + i) for i in winenv['LIB']]
 cflags = ['--target=x86_64-pc-windows', '/winsysroot' + win_sysroot]
 # Without /manifest:no, cmake creates a default manifest file -- and
 # explicitly calls mt.exe (which we don't have in a cross build).
 # This also removes a dependency on rc.exe -- without this we'd also
 # have to set CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY.
-ldflags = ['/manifest:no'] + win_lib
+# TODO: Remove /machine:x64 once crbug.com/1300005 is fixed.
+ldflags = ['/manifest:no', '/winsysroot:' + win_sysroot, '/machine:x64']
 with buildir('buildwin'):
     print 'building windows'
     subprocess.check_call(call_cmake + [
