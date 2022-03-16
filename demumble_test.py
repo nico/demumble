@@ -56,10 +56,10 @@ for t in tests:
     if '<' in cmd:
         p = subprocess.Popen(cmd[:cmd.index('<')], stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             universal_newlines=True)
+                             encoding='utf-8')
         out = p.communicate(input='\n'.join(cmd[cmd.index('<') + 1:]) + '\n')[0]
     else:
-        out = subprocess.check_output(cmd, universal_newlines=True)
+        out = subprocess.check_output(cmd, encoding='utf-8')
     if (out != t[1] if isinstance(t[1], str) else not t[1].match(out)):
         print(f"`{t[0]}`: Expected '{t[1]}', got '{out}'")
         status = 1
