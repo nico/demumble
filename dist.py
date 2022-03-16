@@ -117,7 +117,8 @@ with buildir('buildwin'):
 
 # Copy over mac binary and run tests.
 print 'running tests (on mac)'
-subprocess.check_call(['cp', 'buildmac/demumble', '.'])
+# https://developer.apple.com/documentation/security/updating_mac_software
+subprocess.check_call('rm -f demumble && cp buildmac/demumble .', shell=True)
 subprocess.check_call(['./demumble_test.py'])
 
 # Show zip files.
