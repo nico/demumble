@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Builds demumble for Mac, Linux, Windows.  Must run on a Mac.
 # Needs a chromium checkout at ~/src/chrome/src that was synced with
@@ -67,7 +67,7 @@ linux_sysroot = crsrc + '/build/linux/debian_sid_amd64-sysroot'
 cflags = [ '--sysroot', linux_sysroot, '--target=x86_64-linux-gnu', ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildlinux'):
-    print 'building linux'
+    print('building linux')
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangxx,
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
@@ -81,7 +81,7 @@ with buildir('buildlinux'):
 
 # Mac.
 with buildir('buildmac'):
-    print 'building mac'
+    print('building mac')
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangxx,
         '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
@@ -102,7 +102,7 @@ cflags = ['--target=x86_64-pc-windows', '/winsysroot' + win_sysroot]
 # TODO: Remove /machine:x64 once crbug.com/1300005 is fixed.
 ldflags = ['/manifest:no', '/winsysroot:' + win_sysroot, '/machine:x64']
 with buildir('buildwin'):
-    print 'building windows'
+    print('building windows')
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangcl,
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
@@ -116,7 +116,7 @@ with buildir('buildwin'):
     subprocess.check_call(['mv', 'demumble-win.zip', '..'])
 
 # Copy over mac binary and run tests.
-print 'running tests (on mac)'
+print('running tests (on mac)')
 # https://developer.apple.com/documentation/security/updating_mac_software
 subprocess.check_call('rm -f demumble && cp buildmac/demumble .', shell=True)
 subprocess.check_call(['./demumble_test.py'])
