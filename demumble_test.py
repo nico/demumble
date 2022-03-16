@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import os, re, subprocess, sys
 
 tests = [
@@ -62,7 +61,7 @@ for t in tests:
     else:
         out = subprocess.check_output(cmd, universal_newlines=True)
     if (out != t[1] if isinstance(t[1], str) else not t[1].match(out)):
-        print("`%s`: Expected '%s', got '%s'" % (t[0], t[1], out))
+        print(f"`{t[0]}`: Expected '{t[1]}', got '{out}'")
         status = 1
 print("passed" if status == 0 else "failed")
 sys.exit(status)
