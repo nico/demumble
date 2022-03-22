@@ -37,10 +37,12 @@ lldlink = crsrc + '/third_party/llvm-build/Release+Asserts/bin/lld-link'
 # FIXME: https://chromium-review.googlesource.com/c/chromium/src/+/1214943
 # has a way to build eu-strip on macOS, which is arguably a smaller dep
 # than llvm-strip.
-linux_strip = os.path.join(os.path.expanduser('~'),
-                           'src/llvm-project/out/gn/bin/llvm-strip')
+llvm_strip = os.path.join(os.path.expanduser('~'),
+                          'src/llvm-project/out/gn/bin/llvm-strip')
 
-cmake = '/Applications/CMake.app/Contents/bin/cmake'
+platform = 'mac' if sys.platform == 'darwin' else 'linux'
+cmake = ('/Applications/CMake.app/Contents/bin/cmake' if platform == 'mac' else
+         '/usr/bin/cmake')
 call_cmake = [cmake, '-GNinja', '..', '-DCMAKE_BUILD_TYPE=Release']
 
 
@@ -64,7 +66,7 @@ devnull = open(os.devnull, 'w')
 
 # Linux.
 linux_sysroot = crsrc + '/build/linux/debian_sid_amd64-sysroot'
-cflags = [ '--target=x86_64-linux-gnu', ]
+cflags = [ '--target=x86_64-linux-gnu' ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildlinux'):
     print('building linux')
@@ -76,19 +78,27 @@ with buildir('buildlinux'):
         '-DCMAKE_SYSTEM_NAME=Linux',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
-    subprocess.check_call([linux_strip, 'demumble'])
+    subprocess.check_call([llvm_strip, 'demumble'])
     subprocess.check_call(['zip', '-q9', 'demumble-linux.zip', 'demumble'])
     subprocess.check_call(['mv', 'demumble-linux.zip', '..'])
 
 # Mac.
+mac_sysroot = (crsrc + '/build/mac_files/xcode_binaries/Contents/Developer' +
+                       '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
+cflags = [ '--target=apple-macos', '-mmacosx-version-min=10.9' ]
+ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildmac'):
     print('building mac')
     subprocess.check_call(call_cmake + [
         '-DCMAKE_CXX_COMPILER=' + clangxx,
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
+        '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
         '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
+        '-DCMAKE_OSX_SYSROOT=' + mac_sysroot,
+        '-DCMAKE_SYSTEM_NAME=Darwin',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
-    subprocess.check_call(['strip', 'demumble'])
+    subprocess.check_call([llvm_strip, 'demumble'])
     subprocess.check_call(['zip', '-q9', 'demumble-mac.zip', 'demumble'])
     subprocess.check_call(['mv', 'demumble-mac.zip', '..'])
 
@@ -116,10 +126,11 @@ with buildir('buildwin'):
     subprocess.check_call(['zip', '-q9', 'demumble-win.zip', 'demumble.exe'])
     subprocess.check_call(['mv', 'demumble-win.zip', '..'])
 
-# Copy over mac binary and run tests.
-print('running tests (on mac)')
+# Copy over linux or mac binary and run tests.
+print(f'running tests (on {platform})')
 # https://developer.apple.com/documentation/security/updating_mac_software
-subprocess.check_call('rm -f demumble && cp buildmac/demumble .', shell=True)
+subprocess.check_call(f'rm -f demumble && cp build{platform}/demumble .',
+                      shell=True)
 subprocess.check_call(['./demumble_test.py'])
 
 # Show zip files.
