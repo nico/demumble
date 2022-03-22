@@ -88,7 +88,7 @@ mac_sysroot = (crsrc + '/build/mac_files/xcode_binaries/Contents/Developer' +
 if platform == 'mac' and not os.path.isdir(mac_sysroot):
     mac_sysroot_flag = []
 else:
-    mac_sysroot_flag = [ ' -DCMAKE_OSX_SYSROOT=' + mac_sysroot ]
+    mac_sysroot_flag = [ '-DCMAKE_OSX_SYSROOT=' + mac_sysroot ]
 cflags = [ '--target=apple-macos', '-mmacosx-version-min=10.9' ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildmac'):
