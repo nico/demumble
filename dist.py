@@ -64,7 +64,7 @@ devnull = open(os.devnull, 'w')
 
 # Linux.
 linux_sysroot = crsrc + '/build/linux/debian_sid_amd64-sysroot'
-cflags = [ '--sysroot', linux_sysroot, '--target=x86_64-linux-gnu', ]
+cflags = [ '--target=x86_64-linux-gnu', ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildlinux'):
     print('building linux')
@@ -72,6 +72,7 @@ with buildir('buildlinux'):
         '-DCMAKE_CXX_COMPILER=' + clangxx,
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
+        '-DCMAKE_SYSROOT=' + linux_sysroot,
         '-DCMAKE_SYSTEM_NAME=Linux',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
