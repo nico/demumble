@@ -85,16 +85,19 @@ with buildir('buildlinux'):
 # Mac.
 mac_sysroot = (crsrc + '/build/mac_files/xcode_binaries/Contents/Developer' +
                        '/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
+if platform == 'mac' and not os.path.isdir(mac_sysroot):
+    mac_sysroot_flag = []
+else:
+    mac_sysroot_flag = [ ' -DCMAKE_OSX_SYSROOT=' + mac_sysroot ]
 cflags = [ '--target=apple-macos', '-mmacosx-version-min=10.9' ]
 ldflags = ['-fuse-ld=lld'] + cflags
 with buildir('buildmac'):
     print('building mac')
-    subprocess.check_call(call_cmake + [
+    subprocess.check_call(call_cmake + mac_sysroot_flag + [
         '-DCMAKE_CXX_COMPILER=' + clangxx,
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
         '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
-        '-DCMAKE_OSX_SYSROOT=' + mac_sysroot,
         '-DCMAKE_SYSTEM_NAME=Darwin',
         ], stdout=devnull)
     subprocess.check_call(['ninja', 'demumble'])
