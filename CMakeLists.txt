@@ -35,6 +35,7 @@ add_executable(demumble
                demumble.cc
                third_party/llvm/lib/Demangle/Demangle.cpp
                third_party/llvm/lib/Demangle/ItaniumDemangle.cpp
+               third_party/llvm/lib/Demangle/DLangDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangle.cpp
                third_party/llvm/lib/Demangle/MicrosoftDemangleNodes.cpp
                third_party/llvm/lib/Demangle/RustDemangle.cpp
