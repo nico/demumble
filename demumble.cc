@@ -22,18 +22,19 @@ static int print_help(FILE* out) {
   return out == stdout ? 0 : 1;
 }
 
-static void print_demangled(const char* format, const char* s, size_t* n_used) {
+static void print_demangled(const char* format, std::string_view s,
+                            size_t* n_used) {
   if (char* itanium = llvm::itaniumDemangle(s)) {
-    printf(format, itanium, s);
+    printf(format, itanium, (int)s.size(), s.data());
     free(itanium);
   } else if (char* rust = llvm::rustDemangle(s)) {
-    printf(format, rust, s);
+    printf(format, rust, (int)s.size(), s.data());
     free(rust);
   } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL)) {
-    printf(format, ms, s);
+    printf(format, ms, (int)s.size(), s.data());
     free(ms);
   } else {
-    printf("%s", s);
+    printf("%.*s", (int)s.size(), s.data());
   }
 }
 
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
     } else if (argv[1][0] == '-' && argv[1][1] != '-') {
       for (size_t i = 1; i < strlen(argv[1]); ++i)
         switch (argv[1][i]) {
-        case 'b': print_format = "\"%s\" (%s)"; break;
+        case 'b': print_format = "\"%s\" (%.*s)"; break;
         case 'h': return print_help(stdout);
         case 'm': print_mode = kPrintMatching; break;
         case 'u': setbuf(stdout, NULL); break;
@@ -102,7 +103,7 @@ int main(int argc, char* argv[]) {
   }
   for (int i = 1; i < argc; ++i) {
     size_t used = strlen(argv[i]);
-    print_demangled(print_format, argv[i], &used);
+    print_demangled(print_format, { argv[i], used }, &used);
     printf("\n");
     if (used < strlen(argv[i]))
       printf("  unused suffix: %s\n", argv[i] + used);
@@ -145,12 +146,9 @@ int main(int argc, char* argv[]) {
           continue;
         }
 
-        char tmp = cur[n_sym];
-        cur[n_sym] = '\0';
         size_t n_used = n_sym;
-        print_demangled(print_format, cur, &n_used);
+        print_demangled(print_format, { cur, n_sym }, &n_used);
         need_separator = true;
-        cur[n_sym] = tmp;
 
         cur += n_used;
       }
