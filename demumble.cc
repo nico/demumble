@@ -23,13 +23,13 @@ static int print_help(FILE* out) {
 }
 
 static void print_demangled(const char* format, const char* s, size_t* n_used) {
-  if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
+  if (char* itanium = llvm::itaniumDemangle(s)) {
     printf(format, itanium, s);
     free(itanium);
-  } else if (char* rust = llvm::rustDemangle(s, NULL, NULL, NULL)) {
+  } else if (char* rust = llvm::rustDemangle(s)) {
     printf(format, rust, s);
     free(rust);
-  } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL, NULL, NULL)) {
+  } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL)) {
     printf(format, ms, s);
     free(ms);
   } else {
