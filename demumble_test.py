@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import os, re, subprocess, sys
 
-# FIXME: Re-enable disabled tests once
-# https://github.com/llvm/llvm-project/issues/63740 is fixed.
-# Don't make a release until then.
 tests = [
     ('demumble hello', 'hello\n'),
     ('demumble _Z4funcPci _Z1fv', 'func(char*, int)\nf()\n'),
@@ -12,9 +9,9 @@ tests = [
      'std::mem::align_of::<f64>\nmylib::foo::bar\n'),
     ('demumble < _RINvNtC3std3mem8align_ofdE _RNvNvC5mylib3foo3bar',
      'std::mem::align_of::<f64>\nmylib::foo::bar\n'),
-    #('demumble ?Fxi@@YAHP6AHH@Z@Z', 'int __cdecl Fxi(int (__cdecl *)(int))\n'),
-    #('demumble ??0S@@QEAA@$$QEAU0@@Z', 'public: __cdecl S::S(struct S &&)\n'),
-    #('demumble ??_C@_02PCEFGMJL@hi?$AA@', '"hi"\n'),
+    ('demumble ?Fxi@@YAHP6AHH@Z@Z', 'int __cdecl Fxi(int (__cdecl *)(int))\n'),
+    ('demumble ??0S@@QEAA@$$QEAU0@@Z', 'public: __cdecl S::S(struct S &&)\n'),
+    ('demumble ??_C@_02PCEFGMJL@hi?$AA@', '"hi"\n'),
     ('demumble __Znwi', 'operator new(int)\n'),  # Strip extra _ (for macOS)
     ('demumble < __Znwi', 'operator new(int)\n'),  # Also from stdin
     ('demumble -m hi _Z1fv ho _Z1gv', 'hi\nf()\nho\ng()\n'),
@@ -45,7 +42,7 @@ tests = [
     ('demumble -bx < bar', re.compile(".*unrecognized option `x' in `-bx'.*")),
     ('demumble < _ZZ3fooiENK3$_0clEi',
      'foo(int)::$_0::operator()(int) const\n'),
-    #('demumble .?AVNet@@', "class Net `RTTI Type Descriptor Name'\n"),
+    ('demumble .?AVNet@@', "class Net `RTTI Type Descriptor Name'\n"),
     ('demumble < asdf?x@@3HAjkl', 'asdfint xjkl\n'),
     ('demumble < asdf?x@@3Hjkl', 'asdf?x@@3Hjkl\n'),
     ('demumble ?x@@3HAjkl', 'int x\n  unused suffix: jkl\n'),
