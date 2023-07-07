@@ -1,0 +1,9 @@
+.*.sw?
+
+buildlinux/
+buildmac/
+buildwin/
+
+demumble-linux.zip
+demumble-mac.zip
+demumble-win.zip
