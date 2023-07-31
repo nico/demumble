@@ -1,0 +1,36 @@
+name: Build and test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.11]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: "Install Ubuntu dependencies"
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-12 g++-12 libstdc++-12-dev ninja-build
+
+    - name: CMake
+      run: |
+        cmake -GNinja
+
+    - name: Build
+      run: |
+        ninja
+
+    - name: Test
+      run: |
+        ./demumble_test.py 
