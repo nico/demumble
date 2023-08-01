@@ -19,8 +19,16 @@ if (UNIX)
 endif()
 
 if (WIN32)
+  # https://gitlab.kitware.com/cmake/cmake/-/issues/20610
+  string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REGEX REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  add_definitions(-D_HAS_EXCEPTIONS=0)
+
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:inline /EHs-c- /GR-")
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)  # The LLVM build sets this.
+
+  # Disable cl.exe warnings that LLVM disables as well.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4267")
 
   # This is apparently the simplest way to statically link the CRT in CMake:
   string(TOUPPER "${CMAKE_BUILD_TYPE}" build)
