@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: [3.11]
 
     steps:
@@ -20,6 +20,8 @@ jobs:
 
     - name: Set up Ninja
       uses: ashutoshvarma/setup-ninja@v1.1
+
+    - uses: ilammy/msvc-dev-cmd@v1.12.1
 
     - name: CMake
       run: |
