@@ -33,4 +33,4 @@ jobs:
 
     - name: Test
       run: |
-        ./demumble_test.py 
+        python3 demumble_test.py
