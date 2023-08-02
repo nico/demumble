@@ -1,12 +1,14 @@
 # demumble
 
-`demumble` demangles both Itanium, Rust, and Visual Studio symbols. It runs on
+`demumble` demangles both Itanium and Visual Studio symbols. It runs on
 both POSIX and Windows.
 
     $ demumble _Z4funcPci
     func(char*, int)
     $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
     int __cdecl Fx_i(int (__cdecl *)(int))
+
+It can also demangle Rust and D symbols.
 
 ## Download
 
