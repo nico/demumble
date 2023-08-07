@@ -1,0 +1,18 @@
+.*.sw?
+
+# dist.py outputs:
+buildlinux/
+buildmac/
+buildwin/
+demumble-linux.zip
+demumble-mac.zip
+demumble-win.zip
+
+# build outputs when building as described in README.md:
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles/
+build.ninja
+cmake_install.cmake
+demumble

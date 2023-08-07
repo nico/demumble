@@ -6,7 +6,7 @@
 
 #include "llvm/Demangle/Demangle.h"
 
-const char kDemumbleVersion[] = "1.2.2";
+const char kDemumbleVersion[] = "1.2.3";
 
 static int print_help(FILE* out) {
   fprintf(out,
@@ -22,21 +22,31 @@ static int print_help(FILE* out) {
   return out == stdout ? 0 : 1;
 }
 
-static void print_demangled(const char* format, const char* s) {
-  if (char* itanium = llvm::itaniumDemangle(s, NULL, NULL, NULL)) {
-    printf(format, itanium, s);
+static void print_demangled(const char* format, std::string_view s,
+                            size_t* n_used) {
+  if (char* itanium = llvm::itaniumDemangle(s)) {
+    printf(format, itanium, (int)s.size(), s.data());
     free(itanium);
-  } else if (char* ms = llvm::microsoftDemangle(s, NULL, NULL, NULL)) {
-    printf(format, ms, s);
+  } else if (char* rust = llvm::rustDemangle(s)) {
+    printf(format, rust, (int)s.size(), s.data());
+    free(rust);
+  } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL)) {
+    printf(format, ms, (int)s.size(), s.data());
     free(ms);
   } else {
-    printf("%s", s);
+    printf("%.*s", (int)s.size(), s.data());
   }
 }
 
 static bool is_mangle_char_itanium(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '_' || c == '$';
+}
+
+static bool is_mangle_char_rust(char c) {
+  // See https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || c == '_';
 }
 
 static bool is_mangle_char_win(char c) {
@@ -51,6 +61,11 @@ static bool is_plausible_itanium_prefix(char* s) {
   char prefix[N + 1];
   strncpy(prefix, s, N); prefix[N] = '\0';
   return strstr(prefix, "_Z");
+}
+
+static bool is_plausible_rust_prefix(char* s) {
+  // Rust symbols start with "_R".
+  return s[0] == '_' && s[1] == 'R';
 }
 
 static char buf[8192];
@@ -68,9 +83,9 @@ int main(int argc, char* argv[]) {
       ++argv;
       break;
     } else if (argv[1][0] == '-' && argv[1][1] != '-') {
-      for (int i = 1; i < strlen(argv[1]); ++i)
+      for (size_t i = 1; i < strlen(argv[1]); ++i)
         switch (argv[1][i]) {
-        case 'b': print_format = "\"%s\" (%s)"; break;
+        case 'b': print_format = "\"%s\" (%.*s)"; break;
         case 'h': return print_help(stdout);
         case 'm': print_mode = kPrintMatching; break;
         case 'u': setbuf(stdout, NULL); break;
@@ -87,8 +102,11 @@ int main(int argc, char* argv[]) {
     ++argv;
   }
   for (int i = 1; i < argc; ++i) {
-    print_demangled(print_format, argv[i]);
+    size_t used = strlen(argv[i]);
+    print_demangled(print_format, { argv[i], used }, &used);
     printf("\n");
+    if (used < strlen(argv[i]))
+      printf("  unused suffix: %s\n", argv[i] + used);
   }
   if (argc == 1) {  // Read stdin instead.
     // By default, don't demangle types.  Mangled function names are unlikely
@@ -118,6 +136,9 @@ int main(int argc, char* argv[]) {
         else if (is_plausible_itanium_prefix(cur))
           while (cur + n_sym != end && is_mangle_char_itanium(cur[n_sym]))
             ++n_sym;
+        else if (is_plausible_rust_prefix(cur))
+          while (cur + n_sym != end && is_mangle_char_rust(cur[n_sym]))
+            ++n_sym;
         else {
           if (print_mode == kPrintAll)
             printf("_");
@@ -125,13 +146,11 @@ int main(int argc, char* argv[]) {
           continue;
         }
 
-        char tmp = cur[n_sym];
-        cur[n_sym] = '\0';
-        print_demangled(print_format, cur);
+        size_t n_used = n_sym;
+        print_demangled(print_format, { cur, n_sym }, &n_used);
         need_separator = true;
-        cur[n_sym] = tmp;
 
-        cur += n_sym;
+        cur += n_used;
       }
     }
   }

@@ -1,0 +1,31 @@
+name: Build and test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Ninja
+      uses: ashutoshvarma/setup-ninja@v1.1
+
+    - uses: ilammy/msvc-dev-cmd@v1.12.1
+
+    - name: CMake
+      run: |
+        cmake -GNinja .
+
+    - name: Build
+      run: |
+        ninja
+
+    - name: Test
+      run: |
+        python3 demumble_test.py

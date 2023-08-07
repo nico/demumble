@@ -11,26 +11,54 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Demangle/Demangle.h"
+#include "llvm/Demangle/StringViewExtras.h"
 #include <cstdlib>
+#include <string_view>
 
-static bool isItaniumEncoding(const std::string &MangledName) {
-  size_t Pos = MangledName.find_first_not_of('_');
-  // A valid Itanium encoding requires 1-4 leading underscores, followed by 'Z'.
-  return Pos > 0 && Pos <= 4 && MangledName[Pos] == 'Z';
+using llvm::itanium_demangle::starts_with;
+
+std::string llvm::demangle(std::string_view MangledName) {
+  std::string Result;
+
+  if (nonMicrosoftDemangle(MangledName, Result))
+    return Result;
+
+  if (starts_with(MangledName, '_') &&
+      nonMicrosoftDemangle(MangledName.substr(1), Result))
+    return Result;
+
+  if (char *Demangled = microsoftDemangle(MangledName, nullptr, nullptr)) {
+    Result = Demangled;
+    std::free(Demangled);
+  } else {
+    Result = MangledName;
+  }
+  return Result;
 }
 
-std::string llvm::demangle(const std::string &MangledName) {
-  char *Demangled;
+static bool isItaniumEncoding(std::string_view S) {
+  // Itanium encoding requires 1 or 3 leading underscores, followed by 'Z'.
+  return starts_with(S, "_Z") || starts_with(S, "___Z");
+}
+
+static bool isRustEncoding(std::string_view S) { return starts_with(S, "_R"); }
+
+static bool isDLangEncoding(std::string_view S) { return starts_with(S, "_D"); }
+
+bool llvm::nonMicrosoftDemangle(std::string_view MangledName,
+                                std::string &Result) {
+  char *Demangled = nullptr;
   if (isItaniumEncoding(MangledName))
-    Demangled = itaniumDemangle(MangledName.c_str(), nullptr, nullptr, nullptr);
-  else
-    Demangled =
-        microsoftDemangle(MangledName.c_str(), nullptr, nullptr, nullptr);
+    Demangled = itaniumDemangle(MangledName);
+  else if (isRustEncoding(MangledName))
+    Demangled = rustDemangle(MangledName);
+  else if (isDLangEncoding(MangledName))
+    Demangled = dlangDemangle(MangledName);
 
   if (!Demangled)
-    return MangledName;
+    return false;
 
-  std::string Ret = Demangled;
-  free(Demangled);
-  return Ret;
+  Result = Demangled;
+  std::free(Demangled);
+  return true;
 }

@@ -1,13 +1,15 @@
 # demumble
 
-`demumble` demangles both Itanium and Visual Studio symbols. It runs on both
-POSIX and Windows.
+`demumble` demangles both Itanium and Visual Studio symbols. It runs on
+both POSIX and Windows.
 
     $ demumble _Z4funcPci
     func(char*, int)
     $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
     int __cdecl Fx_i(int (__cdecl *)(int))
-    
+
+It can also demangle Rust and D symbols.
+
 ## Download
 
 There are prebuilt x64 binaries for Linux, Mac (10.9+), and Windows on the
@@ -19,9 +21,9 @@ It has several nice features that c++filt lacks (and lacks many of c++filt's
 features I never use).
 
 Smart about underscores: C++ symbols have an additional leading underscore on
-OS X. `operator new` is mangled as `_Znw` on Linux but `__Znw` on Mac. OS X's
+macOS. `operator new` is mangled as `_Znw` on Linux but `__Znw` on Mac. macOS's
 c++filt automatically strips one leading underscore, but Linux's c++filt
-doesn't. So if you want to demangle a Linux symbol on OS X, you need to pass
+doesn't. So if you want to demangle a Linux symbol on macOS, you need to pass
 `-n` to tell it to not strip the underscore, and if you want to demangle an OS
 X symbol on Linux you likewise need to pass `-_`. demumble just does the right
 thing:
@@ -75,7 +77,7 @@ Optionally print both mangled and demangled names:
 
 ## Build instructions
 
-Use cmake to build: `cmake -G Ninja && ninja`
+Use cmake to build: `cmake -G Ninja . && ninja`
 
 Run tests after building: `python demumble_test.py`
 
