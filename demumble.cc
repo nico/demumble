@@ -6,7 +6,7 @@
 
 #include "llvm/Demangle/Demangle.h"
 
-const char kDemumbleVersion[] = "1.2.2.git";
+const char kDemumbleVersion[] = "1.2.3.git";
 
 static int print_help(FILE* out) {
   fprintf(out,
