@@ -7,7 +7,7 @@
 #include "llvm/Demangle/Demangle.h"
 #include "swift/Demangling/Demangle.h"
 
-const char kDemumbleVersion[] = "1.2.3.git";
+const char kDemumbleVersion[] = "1.3.0.git";
 
 static int print_help(FILE* out) {
   fprintf(out,
