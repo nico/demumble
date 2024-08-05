@@ -225,7 +225,7 @@ public:
   /// A checkpoint which captures the allocator's state at any given time. A
   /// checkpoint can be popped to free all allocations made since it was made.
   struct Checkpoint {
-    Slab *Slab;
+    NodeFactory::Slab *Slab;
     char *CurPtr;
     char *End;
   };
