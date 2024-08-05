@@ -119,13 +119,13 @@ int main(int argc, char* argv[]) {
       char* end = cur + strlen(cur);
 
       while (cur != end) {
-        size_t special = strcspn(cur, "_?");
+        size_t offset_to_possible_symbol = strcspn(cur, "_?");
         if (print_mode == kPrintAll)
-          printf("%.*s", static_cast<int>(special), cur);
+          printf("%.*s", static_cast<int>(offset_to_possible_symbol), cur);
         else if (need_separator)
           printf("\n");
         need_separator = false;
-        cur += special;
+        cur += offset_to_possible_symbol;
         if (cur == end)
           break;
 
