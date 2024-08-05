@@ -5,8 +5,9 @@
 #include <algorithm>
 
 #include "llvm/Demangle/Demangle.h"
+#include "swift/Demangling/Demangle.h"
 
-const char kDemumbleVersion[] = "1.2.3";
+const char kDemumbleVersion[] = "1.3.0";
 
 static int print_help(FILE* out) {
   fprintf(out,
@@ -33,6 +34,14 @@ static void print_demangled(const char* format, std::string_view s,
   } else if (char* ms = llvm::microsoftDemangle(s, n_used, NULL)) {
     printf(format, ms, (int)s.size(), s.data());
     free(ms);
+  } else if (swift::Demangle::isSwiftSymbol(s)) {
+    swift::Demangle::DemangleOptions options;
+    options.SynthesizeSugarOnTypes = true;
+    std::string swift = swift::Demangle::demangleSymbolAsString(s, options);
+    if (swift == s)
+      printf("%.*s", (int)s.size(), s.data()); // Not a mangled name
+    else
+      printf(format, swift.c_str(), (int)s.size(), s.data());
   } else {
     printf("%.*s", (int)s.size(), s.data());
   }
@@ -44,9 +53,15 @@ static bool is_mangle_char_itanium(char c) {
 }
 
 static bool is_mangle_char_rust(char c) {
-  // See https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
+  // https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '_';
+}
+
+static bool is_mangle_char_swift(char c) {
+  // https://github.com/swiftlang/swift/blob/main/docs/ABI/Mangling.rst
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || c == '_' || c == '$';
 }
 
 static bool is_mangle_char_win(char c) {
@@ -66,6 +81,18 @@ static bool is_plausible_itanium_prefix(char* s) {
 static bool is_plausible_rust_prefix(char* s) {
   // Rust symbols start with "_R".
   return s[0] == '_' && s[1] == 'R';
+}
+
+static bool is_plausible_swift_prefix(char* s) {
+  // https://github.com/swiftlang/swift/blob/main/docs/ABI/Mangling.rst
+  // But also swift/test/Demangle/Inputs/manglings.txt, which has
+  // _Tt, _TF etc as prefix.
+
+  // FIXME: This is missing prefix `@__swiftmacro_`.
+  return
+    (s[0] == '$' && s[1] == 's') ||
+    (s[0] == '_' && s[1] == 'T') ||
+    (s[0] == '$' && s[1] == 'S');
 }
 
 static char buf[8192];
@@ -119,13 +146,13 @@ int main(int argc, char* argv[]) {
       char* end = cur + strlen(cur);
 
       while (cur != end) {
-        size_t special = strcspn(cur, "_?");
+        size_t offset_to_possible_symbol = strcspn(cur, "_?$");
         if (print_mode == kPrintAll)
-          printf("%.*s", static_cast<int>(special), cur);
+          printf("%.*s", static_cast<int>(offset_to_possible_symbol), cur);
         else if (need_separator)
           printf("\n");
         need_separator = false;
-        cur += special;
+        cur += offset_to_possible_symbol;
         if (cur == end)
           break;
 
@@ -138,6 +165,9 @@ int main(int argc, char* argv[]) {
             ++n_sym;
         else if (is_plausible_rust_prefix(cur))
           while (cur + n_sym != end && is_mangle_char_rust(cur[n_sym]))
+            ++n_sym;
+        else if (is_plausible_swift_prefix(cur))
+          while (cur + n_sym != end && is_mangle_char_swift(cur[n_sym]))
             ++n_sym;
         else {
           if (print_mode == kPrintAll)

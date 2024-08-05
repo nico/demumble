@@ -1,13 +1,14 @@
 Push new release branch:
-1. make sure branches 'main' and 'release' are synced up locally
+1. make sure branches 'main' and 'release' are synced up locally, check out main
 2. update kDemumbleVersion in demumble.cc with new version (with ".git"), then
        git commit -am 'mark this 1.0.0.git'
 3. git checkout release; git merge main
 4. fix version number in src/version.cc (it will conflict in the above)
 5. commit, tag, push (don't forget to push --tags), build binaries
+       # on the 'release' branch
        git commit -am v1.0.0; git push origin release
        git tag v1.0.0; git push --tags
-       ./dist.py  # on the 'release' branch
+       ./dist.py
        # Push the 1.0.0.git change on main too:
        git checkout main; git push origin main
 6. add demumble-{linux,mac,win}.zip to https://github.com/nico/demumble/releases
