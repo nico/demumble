@@ -44,7 +44,7 @@ static bool is_mangle_char_itanium(char c) {
 }
 
 static bool is_mangle_char_rust(char c) {
-  // See https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
+  // https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html.
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '_';
 }
