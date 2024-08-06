@@ -8,7 +8,7 @@ both POSIX and Windows.
     $ demumble '?Fx_i@@YAHP6AHH@Z@Z'
     int __cdecl Fx_i(int (__cdecl *)(int))
 
-It can also demangle Rust and D symbols.
+It can also demangle D, Rust, and Swift symbols.
 
 ## Download
 
