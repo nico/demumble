@@ -34,6 +34,7 @@ mkdir -p $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/ADL.h $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/DenseMapInfo.h $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/Hashing.h $LLVM_INC_DST/ADT
+cp "$LLVM_INC_SRC"/ADT/PointerIntPair.h $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/STLExtras.h $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/STLForwardCompat.h $LLVM_INC_DST/ADT
 cp "$LLVM_INC_SRC"/ADT/STLFunctionalExtras.h $LLVM_INC_DST/ADT
@@ -52,6 +53,8 @@ cp "$LLVM_INC_SRC"/Support/Casting.h $LLVM_INC_DST/Support
 cp "$LLVM_INC_SRC"/Support/Compiler.h $LLVM_INC_DST/Support
 cp "$LLVM_INC_SRC"/Support/DataTypes.h $LLVM_INC_DST/Support
 cp "$LLVM_INC_SRC"/Support/ErrorHandling.h $LLVM_INC_DST/Support
+cp "$LLVM_INC_SRC"/Support/MathExtras.h $LLVM_INC_DST/Support
+cp "$LLVM_INC_SRC"/Support/PointerLikeTypeTraits.h $LLVM_INC_DST/Support
 cp "$LLVM_INC_SRC"/Support/SwapByteOrder.h $LLVM_INC_DST/Support
 cp "$LLVM_INC_SRC"/Support/type_traits.h $LLVM_INC_DST/Support
 

@@ -18,6 +18,7 @@
 #ifndef SWIFT_DEMANGLING_ASSERT_H
 #define SWIFT_DEMANGLING_ASSERT_H
 
+#include "llvm/Support/Compiler.h"
 #include "swift/Demangling/Demangle.h"
 #include "swift/Demangling/NamespaceMacros.h"
 
