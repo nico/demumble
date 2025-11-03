@@ -67,3 +67,8 @@ add_executable(demumble
 )
 set_target_properties(demumble PROPERTIES CXX_STANDARD 17
                                           CXX_STANDARD_REQUIRED ON)
+install(TARGETS demumble
+        CONFIGURATIONS Release
+        RUNTIME
+          DESTINATION bin
+)
